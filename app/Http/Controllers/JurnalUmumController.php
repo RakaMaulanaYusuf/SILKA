@@ -57,19 +57,19 @@ class JurnalUmumController extends Controller
         $journals = JurnalUmum::with(['account', 'helper'])
             ->where('company_id', $company_id)
             ->where('company_period_id', $period_id)
-            ->orderBy('date', 'desc')
-            ->orderBy('transaction_proof')
+            ->orderBy('tanggal', 'desc')
+            ->orderBy('bukti_transaksi')
             ->get()
             ->map(function($journal) {
                 return [
                     'id' => $journal->id,
-                    'date' => $journal->date->format('Y-m-d'),
-                    'transaction_proof' => $journal->transaction_proof,
-                    'description' => $journal->description,
-                    'account_id' => $journal->account_id,
-                    'account_name' => $journal->account->name,
-                    'helper_id' => $journal->helper_id,
-                    'helper_name' => $journal->helper?->name,
+                    'tanggal' => \Carbon\Carbon::parse($journal->tanggal)->format('Y-m-d'), //ini sebenarnya ->date->format('Y-m-d')
+                    'bukti_transaksi' => $journal->bukti_transaksi,
+                    'keterangan' => $journal->keterangan,
+                    'kode_akun' => $journal->kode_akun,
+                    'nama_akun' => $journal->account->nama_akun,
+                    'kode_bantu' => $journal->kode_bantu,
+                    'nama_bantu' => $journal->helper?->nama_bantu,
                     'debit' => $journal->debit,
                     'credit' => $journal->credit,
                 ];
@@ -79,23 +79,23 @@ class JurnalUmumController extends Controller
 
         $accounts = KodeAkun::where('company_id', $company_id)
             ->where('company_period_id', $period_id)
-            ->orderBy('account_id')
+            ->orderBy('kode_akun')
             ->get()
             ->map(function($account) {
                 return [
-                    'account_id' => $account->account_id,
-                    'name' => $account->name
+                    'kode_akun' => $account->kode_akun,
+                    'nama_akun' => $account->nama_akun
                 ];
             });
             
         $helpers = KodeBantu::where('company_id', $company_id)
             ->where('company_period_id', $period_id)
-            ->orderBy('helper_id')
+            ->orderBy('kode_bantu')
             ->get()
             ->map(function($helper) {
                 return [
-                    'helper_id' => $helper->helper_id,
-                    'name' => $helper->name
+                    'kode_bantu' => $helper->kode_bantu,
+                    'nama_bantu' => $helper->nama_bantu
                 ];
             });
             
@@ -106,11 +106,11 @@ class JurnalUmumController extends Controller
     {
         try {
             $validated = $request->validate([
-                'date' => 'required|date',
-                'transaction_proof' => 'required|string',
-                'description' => 'required|string',
-                'account_id' => 'required|exists:kode_akun,account_id',
-                'helper_id' => 'nullable|exists:kode_bantu,helper_id',
+                'tanggal' => 'required|date',
+                'bukti_transaksi' => 'required|string',
+                'keterangan' => 'required|string',
+                'kode_akun' => 'required|exists:kode_akun,kode_akun',
+                'kode_bantu' => 'nullable|exists:kode_bantu,kode_bantu',
                 'debit' => 'required_without:credit|nullable|numeric|min:0',
                 'credit' => 'required_without:debit|nullable|numeric|min:0',
             ]);
@@ -120,11 +120,11 @@ class JurnalUmumController extends Controller
                 $journal = JurnalUmum::create([
                     'company_id' => auth()->user()->active_company_id,
                     'company_period_id' => auth()->user()->company_period_id,
-                    'date' => $validated['date'],
-                    'transaction_proof' => $validated['transaction_proof'],
-                    'description' => $validated['description'],
-                    'account_id' => $validated['account_id'],
-                    'helper_id' => $validated['helper_id'],
+                    'tanggal' => $validated['tanggal'],
+                    'bukti_transaksi' => $validated['bukti_transaksi'],
+                    'keterangan' => $validated['keterangan'],
+                    'kode_akun' => $validated['kode_akun'],
+                    'kode_bantu' => $validated['kode_bantu'],
                     'debit' => $validated['debit'],
                     'credit' => $validated['credit'],
                 ]);
@@ -133,13 +133,13 @@ class JurnalUmumController extends Controller
 
                 $responseData = [
                     'id' => $journal->id,
-                    'date' => $journal->date->format('Y-m-d'),
-                    'transaction_proof' => $journal->transaction_proof,
-                    'description' => $journal->description,
-                    'account_id' => $journal->account_id,
-                    'account_name' => $journal->account->name,
-                    'helper_id' => $journal->helper_id,
-                    'helper_name' => $journal->helper?->name,
+                    'tanggal' => \Carbon\Carbon::parse($journal->tanggal)->format('Y-m-d'), //ini
+                    'bukti_transaksi' => $journal->bukti_transaksi,
+                    'keterangan' => $journal->keterangan,
+                    'kode_akun' => $journal->kode_akun,
+                    'nama_akun' => $journal->account->nama_akun,
+                    'kode_bantu' => $journal->kode_bantu,
+                    'nama_bantu' => $journal->helper?->nama_bantu,
                     'debit' => $journal->debit,
                     'credit' => $journal->credit,
                 ];
@@ -177,11 +177,11 @@ class JurnalUmumController extends Controller
             }
 
             $validated = $request->validate([
-                'date' => 'required|date',
-                'transaction_proof' => 'required|string',
-                'description' => 'required|string',
-                'account_id' => 'required|exists:kode_akun,account_id',
-                'helper_id' => 'nullable|exists:kode_bantu,helper_id',
+                'tanggal' => 'required|date',
+                'bukti_transaksi' => 'required|string',
+                'keterangan' => 'required|string',
+                'kode_akun' => 'required|exists:kode_akun,kode_akun',
+                'kode_bantu' => 'nullable|exists:kode_bantu,kode_bantu',
                 'debit' => 'required_without:credit|nullable|numeric|min:0',
                 'credit' => 'required_without:debit|nullable|numeric|min:0',
             ]);
@@ -189,11 +189,11 @@ class JurnalUmumController extends Controller
             DB::beginTransaction();
             try {
                 $jurnalUmum->update([
-                    'date' => $validated['date'],
-                    'transaction_proof' => $validated['transaction_proof'],
-                    'description' => $validated['description'],
-                    'account_id' => $validated['account_id'],
-                    'helper_id' => $validated['helper_id'],
+                    'tanggal' => $validated['tanggal'],
+                    'bukti_transaksi' => $validated['bukti_transaksi'],
+                    'keterangan' => $validated['keterangan'],
+                    'kode_akun' => $validated['kode_akun'],
+                    'kode_bantu' => $validated['kode_bantu'],
                     'debit' => $validated['debit'],
                     'credit' => $validated['credit'],
                 ]);
@@ -202,13 +202,13 @@ class JurnalUmumController extends Controller
 
                 $responseData = [
                     'id' => $jurnalUmum->id,
-                    'date' => $jurnalUmum->date->format('Y-m-d'),
-                    'transaction_proof' => $jurnalUmum->transaction_proof,
-                    'description' => $jurnalUmum->description,
-                    'account_id' => $jurnalUmum->account_id,
-                    'account_name' => $jurnalUmum->account->name,
-                    'helper_id' => $jurnalUmum->helper_id,
-                    'helper_name' => $jurnalUmum->helper?->name,
+                    'tanggal' => \Carbon\Carbon::parse($jurnalUmum->tanggal)->format('Y-m-d'), //ini, //ini ->format('Y-m-d')
+                    'bukti_transaksi' => $jurnalUmum->bukti_transaksi,
+                    'keterangan' => $jurnalUmum->keterangan,
+                    'kode_akun' => $jurnalUmum->kode_akun,
+                    'nama_akun' => $jurnalUmum->account->nama_akun,
+                    'kode_bantu' => $jurnalUmum->kode_bantu,
+                    'nama_bantu' => $jurnalUmum->helper?->nama_bantu,
                     'debit' => $jurnalUmum->debit,
                     'credit' => $jurnalUmum->credit,
                 ];

@@ -18,7 +18,7 @@ class AdminController extends Controller
         $totalStaff = User::where('role', 'staff')->count();
         // $totalViewers = User::where('role', 'viewer')->count();
         $totalCompanies = Company::count();
-        $recentUsers = User::latest()->take(5)->get();
+        $recentUsers = User::latest('user_id')->take(5)->get();
         // $unassignedViewers = User::where('role', 'viewer')
         //     ->whereNull('assigned_company_id')
         //     ->count();
@@ -36,9 +36,9 @@ class AdminController extends Controller
     {
         $users = User::whereIn('role', ['staff', 'admin'])
             ->with([
-                                // 'assignedCompany', 
-                                'assignedPeriod'])
-            ->latest()
+                // 'assignedCompany', 
+                'assignedPeriod'])
+            ->latest('user_id')
             ->get();
         
         return view('admin.manage-accounts', compact('users'));
@@ -48,7 +48,7 @@ class AdminController extends Controller
     public function createUser(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
+            'nama' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
             'role' => 'required|in:staff,admin'
@@ -62,7 +62,7 @@ class AdminController extends Controller
         }
 
         $user = User::create([
-            'name' => $request->name,
+            'nama' => $request->nama,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => $request->role
@@ -79,13 +79,13 @@ class AdminController extends Controller
     public function updateUser(Request $request, User $user)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
+            'nama' => 'required|string|max:255',
             'email' => [
                 'required',
                 'string',
                 'email',
                 'max:255',
-                Rule::unique('users')->ignore($user->id)
+                Rule::unique('users')->ignore($user->user_id, 'user_id')
             ],
         ]);
 
@@ -97,7 +97,7 @@ class AdminController extends Controller
         }
 
         $user->update([
-            'name' => $request->name,
+            'nama' => $request->nama,
             'email' => $request->email,
         ]);
 
@@ -107,6 +107,7 @@ class AdminController extends Controller
             'user' => $user
         ]);
     }
+
     public function updateRoleUser(Request $request, User $user)
     {
         $validator = Validator::make($request->all(), [
@@ -247,7 +248,7 @@ class AdminController extends Controller
             ->get()
             ->map(function ($period) {
                 return [
-                    'id' => $period->id,
+                    'id' => $period->period_id,
                     'period_name' => $period->period_month . ' ' . $period->period_year,
                     'period_month' => $period->period_month,
                     'period_year' => $period->period_year

@@ -4,38 +4,53 @@
 
 @section('page')
 <style>
-.swal2-confirm {
-    color: white !important;
-    background-color: #3085d6 !important;
+/* Custom alert animations */
+.alert-enter {
+    animation: slideIn 0.3s ease-out;
 }
 
-.swal2-cancel {
-    color: white !important;
-    background-color: #d33 !important;
+.alert-exit {
+    animation: slideOut 0.3s ease-in;
 }
 
-.swal2-styled {
-    color: white !important;
+@keyframes slideIn {
+    from {
+        transform: translateY(-100px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateY(-100px);
+        opacity: 0;
+    }
 }
 </style>
+
+<div id="alert-container" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 space-y-3"></div>
+
 <div class="bg-gray-50 min-h-screen flex flex-col" 
     x-data="{ 
     searchTerm: '',
     accounts: {{ Js::from($accounts) }},
     newRow: {
-        helper_id: '',
-        name: '',
+        kode_bantu: '',
+        nama_bantu: '',
         status: 'PIUTANG',
         balance: ''
     },
     validateForm(row) {
-        if (!row.helper_id || !row.name) {
-            Swal.fire({
-                title: 'Perhatian',
-                text: 'Kode dan Nama harus diisi',
-                icon: 'warning',
-                confirmButtonColor: '#3085d6'
-            });
+        if (!row.kode_bantu || !row.nama_bantu) {
+            showAlert('warning', 'Kode dan Nama harus diisi');
             return false;
         }
         // Set default value 0 if balance is empty
@@ -64,78 +79,44 @@
                 if (method === 'POST') {
                     this.accounts.push({...result.account, isEditing: false});
                     this.newRow = {
-                        helper_id: '',
-                        name: '',
+                        kode_bantu: '',
+                        nama_bantu: '',
                         status: 'PIUTANG',
                         balance: ''
                     };
                 }
-                Swal.fire({
-                    title: 'Berhasil!',
-                    text: 'Data berhasil disimpan',
-                    icon: 'success',
-                    confirmButtonColor: '#3085d6'
-                });
+                showAlert('success', 'Data berhasil disimpan');
             } else {
-                Swal.fire({
-                    title: 'Gagal!',
-                    text: result.message || 'Terjadi kesalahan saat menyimpan data',
-                    icon: 'error',
-                    confirmButtonColor: '#3085d6'
-                });
+                showAlert('error', result.message || 'Terjadi kesalahan saat menyimpan data');
             }
         } catch (error) {
             console.error('Error:', error);
-            Swal.fire({
-                title: 'Error!',
-                text: 'Terjadi kesalahan saat menyimpan data: ' + error.message,
-                icon: 'error',
-                confirmButtonColor: '#3085d6'
-            });
+            showAlert('error', 'Terjadi kesalahan saat menyimpan data');
         }
     },
     async deleteAccount(accountId) {
-        const result = await Swal.fire({
-            title: 'Konfirmasi',
-            text: 'Apakah Anda yakin ingin menghapus data ini?',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Ya, hapus!',
-            cancelButtonText: 'Batal'
-        });
-        
-        if (!result.isConfirmed) return;
-        
-        try {
-            const response = await fetch(`/kodebantu/${accountId}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                }
-            });
-            
-            const result = await response.json();
-            
-            if (result.success) {
-                this.accounts = this.accounts.filter(account => account.id !== accountId);
-                Swal.fire({
-                    title: 'Berhasil!',
-                    text: 'Data berhasil dihapus',
-                    icon: 'success',
-                    confirmButtonColor: '#3085d6'
+        showConfirm('Apakah Anda yakin ingin menghapus data ini?', async () => {
+            try {
+                const response = await fetch(`/kodebantu/${accountId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
                 });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    this.accounts = this.accounts.filter(account => account.id !== accountId);
+                    showAlert('success', 'Data berhasil dihapus');
+                } else {
+                    showAlert('error', result.message || 'Terjadi kesalahan saat menghapus data');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('error', 'Terjadi kesalahan saat menghapus data');
             }
-        } catch (error) {
-            console.error('Error:', error);
-            Swal.fire({
-                title: 'Error!',
-                text: 'Terjadi kesalahan saat menghapus data',
-                icon: 'error',
-                confirmButtonColor: '#3085d6'
-            });
-        }
+        });
     },
     startEdit(account) {
         account.originalData = { ...account };
@@ -160,28 +141,13 @@
                 account.isEditing = false;
                 delete account.originalData;
                 Object.assign(account, result.account);
-                Swal.fire({
-                    title: 'Berhasil!',
-                    text: 'Data berhasil diperbarui',
-                    icon: 'success',
-                    confirmButtonColor: '#3085d6'
-                });
+                showAlert('success', 'Data berhasil diperbarui');
             } else {
-                Swal.fire({
-                    title: 'Gagal!',
-                    text: result.message || 'Terjadi kesalahan saat menyimpan perubahan',
-                    icon: 'error',
-                    confirmButtonColor: '#3085d6'
-                });
+                showAlert('error', result.message || 'Terjadi kesalahan saat menyimpan perubahan');
             }
         } catch (error) {
             console.error('Error:', error);
-            Swal.fire({
-                title: 'Error!',
-                text: 'Terjadi kesalahan saat menyimpan perubahan',
-                icon: 'error',
-                confirmButtonColor: '#3085d6'
-            });
+            showAlert('error', 'Terjadi kesalahan saat menyimpan perubahan');
         }
     },
     cancelEdit(account) {
@@ -194,9 +160,9 @@
 }">
     <div class="flex overflow-hidden">
         <x-side-bar-menu></x-side-bar-menu>
-        <div id="main-content" class="relative text-black font-poppins w-full h-full overflow-y-auto">
+        <div id="main-content" class="relative text-black font-poppins w-full h-full overflow-y-auto"
+           :class="isOpen ? 'ml-72' : 'ml-16'">
             <x-nav-bar></x-nav-bar>
-
             <div class="bg-white p-6 mx-6 mt-6 rounded-xl shadow-sm">
                 <div class="flex justify-between items-center mb-6">
                     <div>
@@ -230,15 +196,14 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200 text-sm">
-                            <!-- New Row Input -->
                             <tr class="hover:bg-gray-50">
                                 <td class="py-2 px-4 border-r">
-                                    <input type="text" x-model="newRow.helper_id" 
+                                    <input type="text" x-model="newRow.kode_bantu" 
                                         class="w-full px-2 py-1.5 border rounded focus:ring-2 focus:ring-blue-500 text-sm"
                                         placeholder="Kode">
                                 </td>
                                 <td class="py-2 px-4 border-r">
-                                    <input type="text" x-model="newRow.name" 
+                                    <input type="text" x-model="newRow.nama_bantu" 
                                         class="w-full px-2 py-1.5 border rounded focus:ring-2 focus:ring-blue-500 text-sm"
                                         placeholder="Nama">
                                 </td>
@@ -264,28 +229,27 @@
                                 </td>
                             </tr>
 
-                            <!-- Existing Rows -->
                             <template x-for="(account, index) in accounts.filter(a => 
-                                a.helper_id.toString().includes(searchTerm.toLowerCase()) ||
-                                a.name.toLowerCase().includes(searchTerm.toLowerCase())
+                                a.kode_bantu.toString().includes(searchTerm.toLowerCase()) ||
+                                a.nama_bantu.toLowerCase().includes(searchTerm.toLowerCase())
                             )" :key="index">
                                 <tr :class="{'bg-blue-50': account.isEditing}" class="hover:bg-gray-50">
                                     <td class="py-2 px-4 border-r">
                                         <template x-if="!account.isEditing">
-                                            <span x-text="account.helper_id"></span>
+                                            <span x-text="account.kode_bantu"></span>
                                         </template>
                                         <template x-if="account.isEditing">
-                                            <input type="text" x-model="account.helper_id" 
+                                            <input type="text" x-model="account.kode_bantu" 
                                                 class="w-full px-2 py-1.5 border rounded text-sm">
                                         </template>
                                     </td>
                                     
                                     <td class="py-2 px-4 border-r">
                                         <template x-if="!account.isEditing">
-                                            <span x-text="account.name"></span>
+                                            <span x-text="account.nama_bantu"></span>
                                         </template>
                                         <template x-if="account.isEditing">
-                                            <input type="text" x-model="account.name" 
+                                            <input type="text" x-model="account.nama_bantu" 
                                                 class="w-full px-2 py-1.5 border rounded text-sm">
                                         </template>
                                     </td>
@@ -362,7 +326,6 @@
                     </table>
                 </div>
 
-                <!-- Navigation Buttons -->
                 <div class="flex justify-between mt-6">
                     <button onclick="window.location.href='{{ route('pdf.kode-bantu') }}'"
                         class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center space-x-2">
@@ -376,4 +339,102 @@
         </div>
     </div>
 </div>
+
+<script>
+// Simple alert function
+function showAlert(type, message) {
+    const container = document.getElementById('alert-container');
+    const alertId = 'alert-' + Date.now();
+    
+    const colors = {
+        success: 'bg-green-500',
+        error: 'bg-red-500', 
+        warning: 'bg-yellow-500',
+        info: 'bg-blue-500'
+    };
+    
+    const icons = {
+        success: '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>',
+        error: '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>',
+        warning: '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>',
+        info: '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>'
+    };
+    
+    const alertHTML = `
+        <div id="${alertId}" class="flex items-center p-4 text-white rounded-lg shadow-lg alert-enter ${colors[type]} min-w-80 max-w-md">
+            <div class="flex-shrink-0">
+                ${icons[type]}
+            </div>
+            <div class="ml-3 text-sm font-medium">
+                ${message}
+            </div>
+            <button onclick="removeAlert('${alertId}')" class="ml-auto -mx-1.5 -my-1.5 text-white rounded-lg p-1.5 hover:bg-white hover:bg-opacity-20">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                </svg>
+            </button>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', alertHTML);
+    
+    // Auto remove after 4 seconds
+    setTimeout(() => {
+        removeAlert(alertId);
+    }, 4000);
+}
+
+// Simple confirm dialog
+function showConfirm(message, onConfirm) {
+    const overlay = document.createElement('div');
+    overlay.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
+    
+        overlay.innerHTML = `
+        <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 alert-enter">
+            <div class="flex items-center mb-4">
+                <div class="flex-shrink-0">
+                    <svg class="w-6 h-6 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <h3 class="ml-3 text-lg font-semibold text-gray-900">Konfirmasi</h3>
+            </div>
+            <p class="text-gray-700 mb-6">${message}</p>
+            <div class="flex gap-3 justify-end">
+                <button onclick="this.closest('.fixed').remove()" 
+                    class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors">
+                    Batal
+                </button>
+                <button onclick="confirmAction()" 
+                    class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                    Ya, Lanjutkan
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Add confirm action
+    window.confirmAction = function() {
+        overlay.remove();
+        if (onConfirm) onConfirm();
+        delete window.confirmAction;
+    };
+    
+    document.body.appendChild(overlay);
+}
+
+// Remove alert function
+function removeAlert(alertId) {
+    const alert = document.getElementById(alertId);
+    if (alert) {
+        alert.classList.remove('alert-enter');
+        alert.classList.add('alert-exit');
+        setTimeout(() => {
+            if (alert && alert.parentNode) {
+                alert.remove();
+            }
+        }, 300);
+    }
+}
+</script>
 @endsection

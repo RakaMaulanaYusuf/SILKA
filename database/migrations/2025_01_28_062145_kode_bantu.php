@@ -9,33 +9,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('kode_bantu', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('company_id')
-                  ->constrained('companies')
-                  ->onDelete('cascade')
-                  ->nullable(false)
-                  ->comment('ID Perusahaan');
-            $table->foreignId('company_period_id')
-                  ->constrained('company_period')
-                  ->onDelete('cascade')
-                  ->nullable(false)
-                  ->comment('ID Period');
-            $table->string('helper_id')
-                  ->comment('Kode Bantu');
-            $table->string('name')
-                  ->comment('Nama');
-            $table->enum('status', ['PIUTANG', 'HUTANG'])
-                  ->default('PIUTANG')
-                  ->comment('Status');
-            $table->decimal('balance', 15, 2)
-                  ->default(0)
-                  ->comment('Saldo Awal');
+            $table->id('kodebantu_id');
+            $table->string('company_id', 100);
+            $table->foreign('company_id')->references('company_id')->on('company')->onDelete('cascade');
+            $table->string('period_id', 100);
+            $table->foreign('period_id')->references('period_id')->on('company_period')->onDelete('cascade');
+            $table->string('kode_bantu', 50);
+            $table->string('nama_bantu', 50);
+            $table->enum('status', ['PIUTANG', 'HUTANG'])->default('PIUTANG');
+            $table->decimal('balance', 15, 2)->default(0);
             $table->timestamps();
-
-            $table->index('helper_id');
-            $table->index('name');
-            // Making the combination unique for company-period-helper_id
-            $table->unique(['company_id', 'company_period_id', 'helper_id'], 'unique_helper_per_company_period');
+            $table->index('kode_bantu');
+            $table->index('nama_bantu');
+            $table->unique(['company_id', 'period_id', 'kode_bantu'], 'unique_helper_per_company_period');
         });
     }
 

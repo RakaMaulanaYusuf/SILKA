@@ -11,11 +11,11 @@ class DatabaseSeeder extends Seeder
         $this->call([
             CompaniesSeeder::class,
             CompanyPeriodSeeder::class,
-            RoleSeeder::class,
+            // RoleSeeder::class,
             UserSeeder::class,
-            KodeAkunSeeder::class,
-            KodeBantuSeeder::class,
-            JurnalUmumSeeder::class
+            // KodeAkunSeeder::class,
+            // KodeBantuSeeder::class,
+            // JurnalUmumSeeder::class
         ]);
     }
 }

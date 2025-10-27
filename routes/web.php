@@ -43,7 +43,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/admin/users', [AdminController::class, 'createUser'])->name('admin.users.create'); // Untuk membuat user baru
         Route::put('/admin/users/{user}', [AdminController::class, 'updateUser'])->name('admin.users.update'); // Untuk update nama & email
         Route::delete('/admin/users/{user}', [AdminController::class, 'deleteUser'])->name('admin.users.delete');
-        Route::put('/admin/users/{user}/reset-password', [AdminController::class, 'resetPassword'])->name('admin.users.reset-password');
+        Route::post('/admin/users/{user}/reset-password', [AdminController::class, 'resetPassword'])->name('admin.users.reset-password');
 
         // Rute BARU untuk memperbarui role user
         Route::put('/admin/users/{user}/update-role', [AdminController::class, 'updateRoleUser'])->name('admin.users.update-role');

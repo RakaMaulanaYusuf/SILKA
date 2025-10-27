@@ -10,19 +10,19 @@ class KodeAkun extends Model
     
     protected $fillable = [
         'company_id',
-        'company_period_id',  // Added this field
-        'account_id',
-        'name',
-        'helper_table',
-        'balance_type',
-        'report_type',
+        'company_period_id',  
+        'kode_akun',
+        'nama_akun',
+        'tabel_bantuan',
+        'pos_saldo',
+        'pos_laporan',
         'debit',
         'credit'
     ];
 
     protected $casts = [
-        'balance_type' => 'string',
-        'report_type' => 'string',
+        'pos_saldo' => 'string',
+        'pos_laporan' => 'string',
         'debit' => 'decimal:2',
         'credit' => 'decimal:2'
     ];
@@ -39,6 +39,6 @@ class KodeAkun extends Model
 
     public function journalEntries()
     {
-        return $this->hasMany(JurnalUmum::class, 'account_id', 'account_id');
+        return $this->hasMany(JurnalUmum::class, 'kode_akun', 'kode_akun');
     }
 }

@@ -3,34 +3,36 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use App\Models\CompanyPeriod;
+use App\Models\Company;
 
-class CompanyPeriodSeeder extends Seeder 
+class CompanyPeriodSeeder extends Seeder
 {
-   public function run()
-   {
-       DB::table('company_period')->insert([
-           [
-               'company_id' => 1,
-               'period_month' => 'Juli',
-               'period_year' => 2025,
-               'created_at' => now(),
-               'updated_at' => now()
-           ],
-           [
-               'company_id' => 2,
-               'period_month' => 'Januari', 
-               'period_year' => 2025,
-               'created_at' => now(),
-               'updated_at' => now()
-           ],
-           [
-               'company_id' => 2,
-               'period_month' => 'Februari',
-               'period_year' => 2025,
-               'created_at' => now(),
-               'updated_at' => now() 
-           ],
-       ]);
-   }
+    public function run(): void
+    {
+        $cmp1 = Company::where('email', 'majumundur@gmail.com')->first();
+        $cmp2 = Company::where('email', 'jayaabadi@gmail.com')->first();
+
+        $data = [
+            [
+                'company_id' => $cmp1->company_id,
+                'period_month' => 'Juli',
+                'period_year' => 2025,
+            ],
+            [
+                'company_id' => $cmp2->company_id,
+                'period_month' => 'Januari',
+                'period_year' => 2025,
+            ],
+            [
+                'company_id' => $cmp2->company_id,
+                'period_month' => 'Februari',
+                'period_year' => 2025,
+            ],
+        ];
+
+        foreach ($data as $period) {
+            CompanyPeriod::create($period);
+        }
+    }
 }

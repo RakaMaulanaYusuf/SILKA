@@ -15,17 +15,17 @@ class JurnalUmum extends Model
     protected $fillable = [
         'company_id',
         'company_period_id',
-        'date',
-        'transaction_proof',
-        'description',
-        'account_id',
-        'helper_id',
+        'tanggal',
+        'bukti_transaksi',
+        'keterangan',
+        'kode_akun',
+        'kode_bantu',
         'debit',
         'credit'
     ];
 
     protected $casts = [
-        'date' => 'date',
+        'tanggal' => 'date',
         'debit' => 'decimal:2',
         'credit' => 'decimal:2',
     ];
@@ -36,23 +36,23 @@ class JurnalUmum extends Model
     ];
 
     protected $rules = [
-        'date' => 'required|date',
-        'transaction_proof' => 'required|string',
-        'description' => 'required|string',
-        'account_id' => 'required|string|exists:kode_akun,account_id',
-        'helper_id' => 'nullable|string|exists:kode_bantu,helper_id',
+        'tanggal' => 'required|date',
+        'bukti_transaksi' => 'required|string',
+        'keterangan' => 'required|string',
+        'kode_akun' => 'required|string|exists:kode_akun,kode_akun',
+        'kode_bantu' => 'nullable|string|exists:kode_bantu,kode_bantu',
         'debit' => 'required_without:credit|nullable|numeric|min:0',
         'credit' => 'required_without:debit|nullable|numeric|min:0',
     ];
 
     public function account()
     {
-        return $this->belongsTo(KodeAkun::class, 'account_id', 'account_id');
+        return $this->belongsTo(KodeAkun::class, 'kode_akun', 'kode_akun');
     }
 
     public function helper()
     {
-        return $this->belongsTo(KodeBantu::class, 'helper_id', 'helper_id');
+        return $this->belongsTo(KodeBantu::class, 'kode_bantu', 'kode_bantu');
     }
 
     public function company()

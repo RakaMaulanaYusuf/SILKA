@@ -12,16 +12,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('kewajiban', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('company_id')->constrained('companies')->onDelete('cascade')->nullable(false);
-            $table->foreignId('company_period_id')->constrained('company_period')->onDelete('cascade')->nullable(false);
-            $table->string('account_id');
-            $table->string('name');
-            $table->decimal('amount', 15, 2)->default(0);
+            $table->id('kewajiban_id');
+            $table->string('company_id', 100);
+            $table->foreign('company_id')->references('company_id')->on('company')->onDelete('cascade');
+            $table->string('period_id', 100);
+            $table->foreign('period_id')->references('period_id')->on('company_period')->onDelete('cascade');
+            $table->string('kode_akun', 50);
+            $table->string('nama', 50);
+            $table->decimal('jumlah', 15, 2)->default(0);
             $table->timestamps();
             
-            $table->foreign('account_id')->references('account_id')->on('kode_akun');
-            $table->unique(['company_id', 'company_period_id', 'account_id']);
+            $table->foreign('kode_akun')->references('kode_akun')->on('kode_akun');
+            $table->unique(['company_id', 'period_id', 'kode_akun']);
         });
     }
 

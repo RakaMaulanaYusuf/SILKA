@@ -6,18 +6,22 @@ use Illuminate\Database\Eloquent\Model;
 
 class Company extends Model
 {
+    protected $primaryKey = 'company_id';
+    public $incrementing = false;
+    protected $keyType = 'string';
+    protected $table = 'company';
     protected $fillable = [
-        'name',
-        'type', 
-        'address',
-        'phone',
+        'nama',
+        'tipe', 
+        'alamat',
+        'kontak',
         'email',
         'status'
     ];
 
     public function periods()
     {
-        return $this->hasMany(CompanyPeriod::class);
+        return $this->hasMany(CompanyPeriod::class, 'company_id');
     }
 
     public function users()
@@ -52,5 +56,19 @@ class Company extends Model
             'pending' => 'bg-yellow-100 text-yellow-800',
             default => 'bg-gray-100 text-gray-800'
         };
+    }
+
+    //Generate costum id
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($company) {
+            $lastCompany = self::orderBy('company_id', 'desc')->first();
+            $lastNumber = $lastCompany ? (int) substr($lastCompany->company_id, 3) : 0;
+            $newNumber = $lastNumber + 1;
+
+            $company->company_id = 'CMP' . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
+        });
     }
 }

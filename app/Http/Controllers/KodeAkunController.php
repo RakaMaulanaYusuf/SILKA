@@ -29,7 +29,7 @@ class KodeAkunController extends Controller
 
         $accounts = KodeAkun::where('company_id', auth()->user()->active_company_id)
             ->where('company_period_id', auth()->user()->company_period_id)
-            ->orderBy('account_id')
+            ->orderBy('kode_akun')
             ->get();
             
         return view('staff.kodeakun', compact('accounts'));
@@ -39,13 +39,13 @@ class KodeAkunController extends Controller
     {
         try {
             $validated = $request->validate([
-                'account_id' => [
+                'kode_akun' => [
                     'required',
                     'string',
                     function ($attribute, $value, $fail) {
                         $exists = KodeAkun::where('company_id', auth()->user()->active_company_id)
                             ->where('company_period_id', auth()->user()->company_period_id)
-                            ->where('account_id', $value)
+                            ->where('kode_akun', $value)
                             ->exists();
                         
                         if ($exists) {
@@ -53,16 +53,16 @@ class KodeAkunController extends Controller
                         }
                     },
                 ],
-                'name' => 'required|string',
-                'helper_table' => 'nullable|string',
-                'balance_type' => 'required|in:DEBIT,CREDIT',
-                'report_type' => 'required|in:NERACA,LABARUGI',
+                'nama_akun' => 'required|string',
+                'tabel_bantuan' => 'nullable|string',
+                'pos_saldo' => 'required|in:DEBIT,CREDIT',
+                'pos_laporan' => 'required|in:NERACA,LABARUGI',
                 'debit' => [
                     'nullable',
                     'numeric',
                     'min:0',
                     function ($attribute, $value, $fail) use ($request) {
-                        if ($request->balance_type === 'CREDIT' && !empty($value)) {
+                        if ($request->pos_saldo === 'CREDIT' && !empty($value)) {
                             $fail('Kolom debit harus kosong ketika pos saldo CREDIT.');
                         }
                     },
@@ -72,7 +72,7 @@ class KodeAkunController extends Controller
                     'numeric',
                     'min:0',
                     function ($attribute, $value, $fail) use ($request) {
-                        if ($request->balance_type === 'DEBIT' && !empty($value)) {
+                        if ($request->pos_saldo === 'DEBIT' && !empty($value)) {
                             $fail('Kolom kredit harus kosong ketika pos saldo DEBIT.');
                         }
                     },
@@ -83,8 +83,8 @@ class KodeAkunController extends Controller
             $validated['company_id'] = auth()->user()->active_company_id;
             $validated['company_period_id'] = auth()->user()->company_period_id;
             
-            // Set the unused field to null based on balance_type
-            if ($validated['balance_type'] === 'DEBIT') {
+            // Set the unused field to null based on pos_saldo
+            if ($validated['pos_saldo'] === 'DEBIT') {
                 $validated['credit'] = null;
                 $validated['debit'] = $validated['debit'] ?? 0;
             } else {
@@ -115,13 +115,13 @@ class KodeAkunController extends Controller
         }
 
         $validated = $request->validate([
-            'account_id' => [
+            'kode_akun' => [
                 'required',
                 'string',
                 function ($attribute, $value, $fail) use ($kodeAkun) {
                     $exists = KodeAkun::where('company_id', auth()->user()->active_company_id)
                         ->where('company_period_id', auth()->user()->company_period_id)
-                        ->where('account_id', $value)
+                        ->where('kode_akun', $value)
                         ->where('id', '!=', $kodeAkun->id)
                         ->exists();
                     
@@ -130,16 +130,16 @@ class KodeAkunController extends Controller
                     }
                 },
             ],
-            'name' => 'required|string',
-            'helper_table' => 'nullable|string',
-            'balance_type' => 'required|in:DEBIT,CREDIT',
-            'report_type' => 'required|in:NERACA,LABARUGI',
+            'nama_akun' => 'required|string',
+            'tabel_bantuan' => 'nullable|string',
+            'pos_saldo' => 'required|in:DEBIT,CREDIT',
+            'pos_laporan' => 'required|in:NERACA,LABARUGI',
             'debit' => [
                 'nullable',
                 'numeric',
                 'min:0',
                 function ($attribute, $value, $fail) use ($request) {
-                    if ($request->balance_type === 'CREDIT' && !empty($value)) {
+                    if ($request->pos_saldo === 'CREDIT' && !empty($value)) {
                         $fail('Kolom debit harus kosong ketika pos saldo CREDIT.');
                     }
                 },
@@ -149,14 +149,14 @@ class KodeAkunController extends Controller
                 'numeric',
                 'min:0',
                 function ($attribute, $value, $fail) use ($request) {
-                    if ($request->balance_type === 'DEBIT' && !empty($value)) {
+                    if ($request->pos_saldo === 'DEBIT' && !empty($value)) {
                         $fail('Kolom kredit harus kosong ketika pos saldo DEBIT.');
                     }
                 },
             ],
         ]);
 
-        if ($validated['balance_type'] === 'DEBIT') {
+        if ($validated['pos_saldo'] === 'DEBIT') {
             $validated['credit'] = null;
             $validated['debit'] = $validated['debit'] ?? 0;
         } else {
@@ -188,7 +188,7 @@ class KodeAkunController extends Controller
     {
         $accounts = KodeAkun::where('company_id', auth()->user()->active_company_id)
             ->where('company_period_id', auth()->user()->company_period_id)
-            ->orderBy('account_id')
+            ->orderBy('kode_akun')
             ->get();
 
         $data = [
@@ -205,13 +205,13 @@ class KodeAkunController extends Controller
             ],
             'data' => $accounts->map(function($account) {
                 return [
-                    $account->account_id,
-                    $account->name,
-                    $account->helper_table ?? '-',
-                    $account->balance_type,
-                    $account->report_type,
-                    $account->balance_type == 'DEBIT' ? number_format($account->debit, 2) : '-',
-                    $account->balance_type == 'CREDIT' ? number_format($account->credit, 2) : '-'
+                    $account->kode_akun,
+                    $account->nama_akun,
+                    $account->tabel_bantuan ?? '-',
+                    $account->pos_saldo,
+                    $account->pos_laporan,
+                    $account->pos_saldo == 'DEBIT' ? number_format($account->debit, 2) : '-',
+                    $account->pos_saldo == 'CREDIT' ? number_format($account->credit, 2) : '-'
                 ];
             }),
             'totals' => [

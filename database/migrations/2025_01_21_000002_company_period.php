@@ -12,16 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('company_period', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('company_id')->constrained('companies')->onDelete('cascade');
-            $table->enum('period_month', [
-                'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-                'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-            ]);
+            $table->string('period_id', 100)->primary();
+            $table->string('company_id', 100);
+            $table->foreign('company_id')->references('company_id')->on('company')->onDelete('cascade');
+            $table->enum('period_month', ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni','Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']);
             $table->year('period_year');
             $table->timestamps();
-            
-            // Prevent duplicate periods for same company
             $table->unique(['company_id', 'period_month', 'period_year']);
         });
     }

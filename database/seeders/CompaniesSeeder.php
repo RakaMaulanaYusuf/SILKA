@@ -3,33 +3,31 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use App\Models\Company;
 
 class CompaniesSeeder extends Seeder
 {
-   public function run()
-   {
-       DB::table('companies')->insert([
-           [
-               'name' => 'PT MAJU MUNDUR',
-               'type' => 'Perdagangan Umum',
-               'address' => 'Jl. Maju No. 123, Jakarta',
-               'phone' => '021-5551234',
-               'email' => 'majumundur@gmail.com',
-            //    'status' => 'Aktif',
-               'created_at' => now(),
-               'updated_at' => now(),
-           ],
-           [
-               'name' => 'PT JAYA ABADI',
-               'type' => 'Perdagangan',
-               'address' => 'Jl. Jaya No. 456, Jakarta', 
-               'phone' => '031-5555678',
-               'email' => 'jayaabadi@gmail.com',
-            //    'status' => 'Nonaktif',
-               'created_at' => now(),
-               'updated_at' => now(),
-           ],
-       ]);
-   }
+    public function run(): void
+    {
+        $companies = [
+            [
+                'nama'   => 'PT MAJU MUNDUR',
+                'tipe'   => 'Perdagangan Umum',
+                'alamat' => 'Jl. Maju No. 123, Jakarta',
+                'kontak' => '0215551234',
+                'email'  => 'majumundur@gmail.com',
+            ],
+            [
+                'nama'   => 'PT JAYA ABADI',
+                'tipe'   => 'Perdagangan',
+                'alamat' => 'Jl. Jaya No. 456, Jakarta',
+                'kontak' => '0315555678',
+                'email'  => 'jayaabadi@gmail.com',
+            ],
+        ];
+
+        foreach ($companies as $data) {
+            Company::updateOrCreate(['email' => $data['email']], $data);
+        }
+    }
 }

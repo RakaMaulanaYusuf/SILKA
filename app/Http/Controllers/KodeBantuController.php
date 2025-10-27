@@ -29,7 +29,7 @@ class KodeBantuController extends Controller
 
         $accounts = KodeBantu::where('company_id', auth()->user()->active_company_id)
             ->where('company_period_id', auth()->user()->company_period_id)
-            ->orderBy('helper_id')
+            ->orderBy('kode_bantu')
             ->get();
             
         return view('staff.kodebantu', compact('accounts'));
@@ -39,13 +39,13 @@ class KodeBantuController extends Controller
     {
         try {
             $validated = $request->validate([
-                'helper_id' => [
+                'kode_bantu' => [
                     'required',
                     'string',
                     function ($attribute, $value, $fail) {
                         $exists = KodeBantu::where('company_id', auth()->user()->active_company_id)
                             ->where('company_period_id', auth()->user()->company_period_id)
-                            ->where('helper_id', $value)
+                            ->where('kode_bantu', $value)
                             ->exists();
                         
                         if ($exists) {
@@ -53,7 +53,7 @@ class KodeBantuController extends Controller
                         }
                     },
                 ],
-                'name' => 'required|string',
+                'nama_bantu' => 'required|string',
                 'status' => 'required|in:PIUTANG,HUTANG',
                 'balance' => 'nullable|numeric|min:0'
             ]);
@@ -87,13 +87,13 @@ class KodeBantuController extends Controller
         }
 
         $validated = $request->validate([
-            'helper_id' => [
+            'kode_bantu' => [
                 'required',
                 'string',
                 function ($attribute, $value, $fail) use ($kodeBantu) {
                     $exists = KodeBantu::where('company_id', auth()->user()->active_company_id)
                         ->where('company_period_id', auth()->user()->company_period_id)
-                        ->where('helper_id', $value)
+                        ->where('kode_bantu', $value)
                         ->where('id', '!=', $kodeBantu->id)
                         ->exists();
                     
@@ -102,7 +102,7 @@ class KodeBantuController extends Controller
                     }
                 },
             ],
-            'name' => 'required|string',
+            'nama_bantu' => 'required|string',
             'status' => 'required|in:PIUTANG,HUTANG',
             'balance' => 'nullable|numeric|min:0'
         ]);
@@ -134,7 +134,7 @@ class KodeBantuController extends Controller
     {
         $accounts = KodeBantu::where('company_id', auth()->user()->active_company_id)
             ->where('company_period_id', auth()->user()->company_period_id)
-            ->orderBy('helper_id')
+            ->orderBy('kode_bantu')
             ->get();
 
         $data = [
@@ -148,8 +148,8 @@ class KodeBantuController extends Controller
             ],
             'data' => $accounts->map(function($account) {
                 return [
-                    $account->helper_id,
-                    $account->name,
+                    $account->kode_bantu,
+                    $account->nama_bantu,
                     $account->status,
                     number_format($account->balance, 2)
                 ];

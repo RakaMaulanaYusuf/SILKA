@@ -21,8 +21,8 @@
 <div class="bg-gray-50 min-h-screen flex flex-col" x-data="{
     openDrawer: false,
     openPeriodModal: false,
-    openEditDrawer: false, // New Alpine.js property for edit drawer
-    editingCompany: null, // New Alpine.js property to store company being edited
+    openEditDrawer: false, 
+    editingCompany: null, 
     searchTerm: '',
     searchMonth: '',
     searchYear: '',
@@ -43,7 +43,7 @@
 
     filteredCompanies() {
         return this.companies.filter(c => {
-            let matchesName = c.name.toLowerCase().includes(this.searchTerm.toLowerCase());
+            let matchesName = c.nama.toLowerCase().includes(this.searchTerm.toLowerCase());
             let matchesMonth = this.searchMonth === '' ||
                 c.periods.some(p => p.period_month === this.searchMonth);
             let matchesYear = this.searchYear === '' ||
@@ -61,12 +61,12 @@
 
     getCompanyYears(company) {
         if (!company.periods || company.periods.length === 0) {
-            console.log('No periods found for company:', company.name);
+            console.log('No periods found for company:', company.nama);
             return [];
         }
         const years = [...new Set(company.periods.map(p => p.period_year))];
         const sortedYears = years.sort((a, b) => b - a);
-        console.log('Available years for company:', company.name, sortedYears);
+        console.log('Available years for company:', company.nama, sortedYears);
         return sortedYears;
     },
 
@@ -187,7 +187,7 @@
     deleteCompany(company) {
         Swal.fire({
             title: 'Hapus Perusahaan?',
-            text: `Apakah Anda yakin ingin menghapus perusahaan '${company.name}'? Data ini tidak dapat dikembalikan!`,
+            text: `Apakah Anda yakin ingin menghapus perusahaan '${company.nama}'? Data ini tidak dapat dikembalikan!`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#dc2626',
@@ -249,10 +249,10 @@
     addCompany(event) {
         const formData = new FormData(event.target);
         const data = {
-            name: formData.get('name'),
-            type: formData.get('type'),
-            address: formData.get('address'),
-            phone: formData.get('phone'),
+            nama: formData.get('nama'),
+            tipe: formData.get('tipe'),
+            alamat: formData.get('alamat'),
+            kontak: formData.get('kontak'),
             email: formData.get('email'),
             period_month: formData.get('period_month'),
             period_year: formData.get('period_year')
@@ -351,7 +351,7 @@
 
     // New Function: Open Edit Drawer
     openEditCompanyDrawer(company) {
-        this.editingCompany = { ...company }; // Create a copy to avoid direct mutation
+        this.editingCompany = { ...company }; 
         this.openEditDrawer = true;
     },
 
@@ -359,12 +359,11 @@
     updateCompany(event) {
         const formData = new FormData(event.target);
         const data = {
-            name: formData.get('name'),
-            type: formData.get('type'),
-            address: formData.get('address'),
-            phone: formData.get('phone'),
+            nama: formData.get('nama'),
+            tipe: formData.get('tipe'),
+            alamat: formData.get('alamat'),
+            kontak: formData.get('kontak'),
             email: formData.get('email'),
-            // Period details are not updated via this form, only company details
         };
 
         fetch(`{{ url('companies') }}/${this.editingCompany.id}`, {
@@ -385,7 +384,7 @@
                     this.companies[index] = { ...this.companies[index], ...result.company };
                 }
                 this.openEditDrawer = false;
-                this.editingCompany = null; // Clear editing company
+                this.editingCompany = null; 
                 Swal.fire({
                     title: 'Berhasil!',
                     text: 'Perusahaan berhasil diperbarui',
@@ -503,11 +502,11 @@
 
                         <div class="flex items-center mb-4">
                             <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <span class="text-xl font-bold text-blue-600" x-text="company.name.charAt(0)"></span>
+                                <span class="text-xl font-bold text-blue-600" x-text="company.nama.charAt(0)"></span>
                             </div>
                             <div class="ml-4">
-                                <h3 class="font-semibold" x-text="company.name"></h3>
-                                <p class="text-sm text-gray-500" x-text="company.type"></p>
+                                <h3 class="font-semibold" x-text="company.nama"></h3>
+                                <p class="text-sm text-gray-500" x-text="company.tipe"></p>
                             </div>
                         </div>
 
@@ -522,11 +521,11 @@
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-500">No Telepon</span>
-                                <span class="text-green-500 font-medium" x-text="company.phone"></span>
+                                <span class="text-green-500 font-medium" x-text="company.kontak"></span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-500">Alamat</span>
-                                <span class="text-green-500 font-medium" x-text="company.address"></span>
+                                <span class="text-green-500 font-medium" x-text="company.alamat"></span>
                             </div>
                         </div>
 
@@ -609,28 +608,28 @@
                         <form @submit.prevent="addCompany" class="space-y-4">
                             <div>
                                 <label class="block text-sm font-medium mb-1">Nama Perusahaan</label>
-                                <input type="text" name="name" required
+                                <input type="text" name="nama" required
                                     placeholder="Masukkan nama perusahaan"
                                     class="w-full border rounded-md p-2">
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium mb-1">Jenis Usaha</label>
-                                <input type="text" name="type" required
+                                <input type="text" name="tipe" required
                                     placeholder="Masukkan jenis usaha"
                                     class="w-full border rounded-md p-2">
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium mb-1">Alamat</label>
-                                <input type="text" name="address" required
+                                <input type="text" name="alamat" required
                                     placeholder="Masukkan alamat perusahaan"
                                     class="w-full border rounded-md p-2">
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium mb-1">No.Telephon</label>
-                                <input type="text" name="phone" required
+                                <input type="text" name="kontak" required
                                     placeholder="Masukkan no.tlpn perusahaan"
                                     class="w-full border rounded-md p-2">
                             </div>
@@ -716,25 +715,25 @@
                         <form x-if="editingCompany" @submit.prevent="updateCompany" class="space-y-4">
                             <div>
                                 <label class="block text-sm font-medium mb-1">Nama Perusahaan</label>
-                                <input type="text" name="name" x-model="editingCompany.name" required
+                                <input type="text" name="nama" x-model="editingCompany.nama" required
                                     class="w-full border rounded-md p-2">
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium mb-1">Jenis Usaha</label>
-                                <input type="text" name="type" x-model="editingCompany.type" required
+                                <input type="text" name="tipe" x-model="editingCompany.tipe" required
                                     class="w-full border rounded-md p-2">
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium mb-1">Alamat</label>
-                                <input type="text" name="address" x-model="editingCompany.address" required
+                                <input type="text" name="alamat" x-model="editingCompany.alamat" required
                                     class="w-full border rounded-md p-2">
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium mb-1">No.Telephon</label>
-                                <input type="text" name="phone" x-model="editingCompany.phone" required
+                                <input type="text" name="kontak" x-model="editingCompany.kontak" required
                                     class="w-full border rounded-md p-2">
                             </div>
 
@@ -776,7 +775,7 @@
                         <select name="company_id" required class="w-full border rounded-md p-2">
                             <option value="">Pilih Perusahaan</option>
                             <template x-for="company in companies" :key="company.id">
-                                <option :value="company.id" x-text="company.name"></option>
+                                <option :value="company.id" x-text="company.nama"></option>
                             </template>
                         </select>
                     </div>

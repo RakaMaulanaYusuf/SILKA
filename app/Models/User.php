@@ -8,10 +8,13 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable 
 {
-    use HasFactory, Notifiable;
+    protected $primaryKey = 'user_id';
+    public $incrementing = false;
+    protected $keyType = 'string';
 
+    use HasFactory, Notifiable;
     protected $fillable = [
-        'name', 'email', 'password', 'role',
+        'nama', 'email', 'password', 'role',
         'active_company_id', 
         // 'assigned_company_id',
         'company_period_id', 'assigned_company_period_id'
@@ -46,5 +49,19 @@ class User extends Authenticatable
 
     public function assignedPeriod() {
         return $this->belongsTo(CompanyPeriod::class, 'assigned_company_period_id');
+    }
+
+    //Generate costum id
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($user) {
+            $lastUser = self::orderBy('user_id', 'desc')->first();
+            $lastNumber = $lastUser ? (int) substr($lastUser->user_id, 3) : 0;
+            $newNumber = $lastNumber + 1;
+
+            $user->user_id = 'USR' . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
+        });
     }
 }

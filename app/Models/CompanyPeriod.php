@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class CompanyPeriod extends Model
 {
+    protected $primaryKey = 'period_id';
+    public $incrementing = false;
+    protected $keyType = 'string';
     protected $table = 'company_period';
     
     protected $fillable = [
@@ -134,5 +137,19 @@ class CompanyPeriod extends Model
             ->where('period_month', $nextMonth)
             ->where('period_year', $nextYear)
             ->first();
+    }
+
+    //Generate costum id
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($period) {
+            $lastPeriod = self::orderBy('period_id', 'desc')->first();
+            $lastNumber = $lastPeriod ? (int) substr($lastPeriod->period_id, 3) : 0;
+            $newNumber = $lastNumber + 1;
+
+            $period->period_id = 'PRD' . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
+        });
     }
 }

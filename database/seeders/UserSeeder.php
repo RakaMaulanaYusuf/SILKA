@@ -2,56 +2,39 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Seeder;
+use App\Models\User;
+use App\Models\Company;
+use App\Models\CompanyPeriod;
 use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        // Hapus admin yang ada jika sudah ada
-        User::where('email', 'admin@gmail.com')->delete();
-        
-        // Admin user
-        User::create([
-            'name' => 'yusuf',
-            'email' => 'yusuf@gmail.com',
-            'password' => Hash::make('password'),
-            'role' => 'admin'
-        ]);
+        $cmp1 = Company::where('email', 'majumundur@gmail.com')->first();
+        $prd1 = CompanyPeriod::where('company_id', $cmp1->company_id)->first();
 
-        // Staff users
+        User::updateOrCreate(
+            ['email' => 'yusuf@gmail.com'],
+            [
+                'nama' => 'Yusuf',
+                'password' => Hash::make('password'),
+                'role' => 'admin',
+                'company_id' => $cmp1->company_id,
+                'period_id' => $prd1?->period_id,
+            ]
+        );
+
         User::updateOrCreate(
             ['email' => 'rakamaulanayusuf@gmail.com'],
             [
-                'name' => 'Raka Maulana Yusuf',
+                'nama' => 'Raka Maulana Yusuf',
                 'password' => Hash::make('password'),
-                'role' => 'staff'
+                'role' => 'staff',
+                'company_id' => $cmp1->company_id,
+                'period_id' => $prd1?->period_id,
             ]
         );
-
-        User::updateOrCreate(
-            ['email' => 'raka@gmail.com'],
-            [
-                'name' => 'Raka',
-                'password' => Hash::make('password'),
-                'role' => 'staff'
-            ]
-        );
-
-        // Viewer user (hanya jika ada company)
-        // if (\App\Models\Company::count() > 0) {
-        //     User::updateOrCreate(
-        //         ['email' => 'majumundur@gmail.com'],
-        //         [
-        //             'name' => 'PT MAJU MUNDUR',
-        //             'password' => Hash::make('password'),
-        //             'role' => 'viewer',
-        //             'assigned_company_id' => 1,
-        //             'assigned_company_period_id' => 1
-        //         ]
-        //     );
-        // }
     }
 }

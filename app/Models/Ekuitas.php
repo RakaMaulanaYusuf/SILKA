@@ -11,13 +11,13 @@ class Ekuitas extends Model
     protected $fillable = [
         'company_id',
         'company_period_id',
-        'account_id',
-        'name',
-        'amount'
+        'kode_akun',
+        'nama',
+        'jumlah'
     ];
 
     protected $casts = [
-        'amount' => 'decimal:2',
+        'jumlah' => 'decimal:2',
     ];
 
     public function company(): BelongsTo
@@ -32,13 +32,13 @@ class Ekuitas extends Model
 
     public function account(): BelongsTo
     {
-        return $this->belongsTo(KodeAkun::class, 'account_id', 'account_id');
+        return $this->belongsTo(KodeAkun::class, 'kode_akun', 'kode_akun');
     }
 
     public function scopeTotalForCompany($query, $company_id, $period_id)
     {
         return $query->where('company_id', $company_id)
                     ->where('company_period_id', $period_id)
-                    ->sum('amount');
+                    ->sum('jumlah');
     }
 }

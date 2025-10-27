@@ -10,6 +10,6 @@ class BukuBesar extends Model
     
     public function kodeAkun()
     {
-        return $this->belongsTo(KodeAkun::class, 'account_id', 'account_id');
+        return $this->belongsTo(KodeAkun::class, 'kode_akun', 'kode_akun');
     }
 }

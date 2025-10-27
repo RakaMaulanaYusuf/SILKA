@@ -1,7 +1,7 @@
 {{-- Current Company Indicator --}}
 <div>
     @if(auth()->user()->activeCompany)
-        <div class="sticky top-0 bg-blue-700 text-white py-3 px-6 flex justify-between items-center z-50 shadow-md">
+        <div class="sticky top-0 w-full bg-blue-700 text-white py-3 px-6 flex justify-between items-center z-10 shadow-md">
             <div class="flex items-center space-x-6">
                 <div class="flex items-center space-x-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-200" viewBox="0 0 20 20" fill="currentColor">

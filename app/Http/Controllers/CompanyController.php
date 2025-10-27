@@ -14,7 +14,14 @@ class CompanyController extends Controller
     {
         $this->middleware(function ($request, $next) {
             if (auth()->check()) {
-                if (!in_array($request->route()->getName(), ['listP', 'companies.store', 'companies.setActive', 'periods.store', 'companies.destroy', 'companies.update'])) { // Added 'companies.update'
+                if (!in_array($request->route()->getName(), [
+                    'listP',
+                    'companies.store',
+                    'companies.setActive',
+                    'periods.store',
+                    'companies.destroy',
+                    'companies.update'
+                ])) {
                     if (!auth()->user()->active_company_id) {
                         return redirect()->route('listP')
                             ->with('warning', 'Silakan pilih perusahaan terlebih dahulu');
@@ -27,13 +34,14 @@ class CompanyController extends Controller
 
     public function index()
     {
-        $companies = Company::with(['periods' => function($query) {
+        $companies = Company::with(['periods' => function ($query) {
             $query->orderBy('period_year', 'desc')
-                    ->orderBy('period_month', 'desc');
+                  ->orderBy('period_month', 'desc');
         }])->get();
 
+        // dd($companies);
         $activeCompany = Auth::user()->activeCompany;
-
+        
         return view('staff.listperusahaan', compact('companies', 'activeCompany'));
     }
 
@@ -42,27 +50,27 @@ class CompanyController extends Controller
         DB::beginTransaction();
         try {
             $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'type' => 'required|string|max:255',
-                'address' => 'required|string|max:255',
-                'phone' => 'required|string|max:255',
-                'email' => 'required|string|max:255',
+                'nama'         => 'required|string|max:255',
+                'tipe'         => 'required|string|max:255',
+                'alamat'       => 'required|string|max:255',
+                'kontak'       => 'required|string|max:255',
+                'email'        => 'required|string|max:255',
                 'period_month' => 'required|string',
-                'period_year' => 'required|integer|min:2000|max:2099',
+                'period_year'  => 'required|integer|min:2000|max:2099',
             ]);
 
             $company = Company::create([
-                'name' => $validated['name'],
-                'type' => $validated['type'],
-                'address' => $validated['address'],
-                'phone' => $validated['phone'],
-                'email' => $validated['email'],
+                'nama'   => $validated['nama'],
+                'tipe'   => $validated['tipe'],
+                'alamat' => $validated['alamat'],
+                'kontak' => $validated['kontak'],
+                'email'  => $validated['email'],
             ]);
 
             $period = CompanyPeriod::create([
-                'company_id' => $company->id,
+                'company_id'   => $company->id,
                 'period_month' => $validated['period_month'],
-                'period_year' => $validated['period_year']
+                'period_year'  => $validated['period_year']
             ]);
 
             DB::commit();
@@ -86,12 +94,12 @@ class CompanyController extends Controller
     {
         try {
             $validated = $request->validate([
-                'company_id' => 'required|exists:companies,id',
+                'company_id'   => 'required|exists:company,id',
                 'period_month' => 'required|string',
-                'period_year' => 'required|integer|min:2000|max:2099'
+                'period_year'  => 'required|integer|min:2000|max:2099'
             ]);
 
-            // Check for duplicate period
+            // Cek duplicate period
             $exists = CompanyPeriod::where('company_id', $validated['company_id'])
                 ->where('period_month', $validated['period_month'])
                 ->where('period_year', $validated['period_year'])
@@ -105,14 +113,14 @@ class CompanyController extends Controller
             }
 
             $period = CompanyPeriod::create([
-                'company_id' => $validated['company_id'],
+                'company_id'   => $validated['company_id'],
                 'period_month' => $validated['period_month'],
-                'period_year' => $validated['period_year']
+                'period_year'  => $validated['period_year']
             ]);
 
             return response()->json([
                 'success' => true,
-                'period' => $period
+                'period'  => $period
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -152,7 +160,7 @@ class CompanyController extends Controller
     {
         DB::beginTransaction();
         try {
-            // Check if company is currently active for any user
+            // Cek apakah perusahaan sedang aktif dipakai user
             $activeUsers = \App\Models\User::where('active_company_id', $company->id)->count();
 
             if ($activeUsers > 0) {
@@ -162,10 +170,10 @@ class CompanyController extends Controller
                 ], 422);
             }
 
-            // Delete all periods related to this company
+            // Hapus semua periode terkait perusahaan
             CompanyPeriod::where('company_id', $company->id)->delete();
 
-            // Delete the company
+            // Hapus perusahaan
             $company->delete();
 
             DB::commit();
@@ -174,7 +182,6 @@ class CompanyController extends Controller
                 'success' => true,
                 'message' => 'Perusahaan berhasil dihapus'
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
@@ -184,22 +191,15 @@ class CompanyController extends Controller
         }
     }
 
-    /**
-     * Update the specified company in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Company  $company
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function update(Request $request, Company $company)
     {
         try {
             $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'type' => 'required|string|max:255',
-                'address' => 'required|string|max:255',
-                'phone' => 'required|string|max:255',
-                'email' => 'required|string|max:255',
+                'nama'   => 'required|string|max:255',
+                'tipe'   => 'required|string|max:255',
+                'alamat' => 'required|string|max:255',
+                'kontak' => 'required|string|max:255',
+                'email'  => 'required|string|max:255',
             ]);
 
             $company->update($validated);
@@ -207,7 +207,7 @@ class CompanyController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Perusahaan berhasil diperbarui',
-                'company' => $company // Return the updated company data
+                'company' => $company
             ]);
         } catch (\Exception $e) {
             return response()->json([

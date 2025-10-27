@@ -9,21 +9,23 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('jurnal_umum', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('company_id')->constrained('companies')->onDelete('cascade')->nullable(false);
-            $table->foreignId('company_period_id')->constrained('company_period')->onDelete('cascade')->nullable(false);
-            $table->date('date');
-            $table->string('transaction_proof');
-            $table->text('description');
-            $table->string('account_id');
-            $table->string('helper_id')->nullable();
-            $table->decimal('debit', 15, 2)->nullable();  // Dibuat nullable
-            $table->decimal('credit', 15, 2)->nullable(); // Dibuat nullable
+            $table->id('jurnalumum_id');
+            $table->string('company_id', 100);
+            $table->foreign('company_id')->references('company_id')->on('company')->onDelete('cascade');
+            $table->string('period_id', 100);
+            $table->foreign('period_id')->references('period_id')->on('company_period')->onDelete('cascade');
+            $table->date('tanggal');
+            $table->string('bukti_transaksi', 50);
+            $table->string('keterangan', 50);
+            $table->string('kode_akun', 50);
+            $table->string('kode_bantu', 50)->nullable();
+            $table->decimal('debit', 15, 2)->nullable();  
+            $table->decimal('credit', 15, 2)->nullable(); 
             $table->timestamps();
             
-            $table->foreign('account_id')->references('account_id')->on('kode_akun')->onDelete('cascade');
-            $table->foreign('helper_id')->references('helper_id')->on('kode_bantu')->onDelete('set null');
-            $table->index(['date', 'transaction_proof']);
+            $table->foreign('kode_akun')->references('kode_akun')->on('kode_akun')->onDelete('cascade');
+            $table->foreign('kode_bantu')->references('kode_bantu')->on('kode_bantu')->onDelete('set null');
+            $table->index(['tanggal', 'bukti_transaksi']);
         });
     }
 

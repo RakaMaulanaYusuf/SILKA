@@ -10,15 +10,15 @@ class KodeBantu extends Model
     
     protected $fillable = [
         'company_id',
-        'company_period_id',  // Added this field
-        'helper_id',
-        'name',
+        'company_period_id',  
+        'kode_bantu',
+        'nama_bantu',
         'status',
         'balance'
     ];
 
     protected $casts = [
-        'status' => 'string',    // PIUTANG atau HUTANG 
+        'status' => 'string',    
         'balance' => 'decimal:2'
     ];
 
@@ -34,6 +34,6 @@ class KodeBantu extends Model
 
     public function journalEntries()
     {
-        return $this->hasMany(JurnalUmum::class, 'helper_id', 'helper_id');
+        return $this->hasMany(JurnalUmum::class, 'kode_bantu', 'kode_bantu');
     }
 }

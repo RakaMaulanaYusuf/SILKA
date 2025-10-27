@@ -33,9 +33,6 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                                     Role
                                 </th>
-                                {{-- <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Perusahaan Assigned
-                                </th> --}}
                                 <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                                     Tanggal Dibuat
                                 </th>
@@ -46,7 +43,7 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200" id="usersTableBody">
                             @foreach($users as $user)
-                            <tr class="hover:bg-gray-50" data-user-id="{{ $user->id }}">
+                            <tr class="hover:bg-gray-50" data-user-id="{{ $user->user_id }}">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
                                         <div class="flex-shrink-0 h-10 w-10">
@@ -60,13 +57,13 @@
                                                     @if($user->role === 'admin') from-yellow-400 to-yellow-500 @endif
                                                     flex items-center justify-center">
                                                     <span class="text-sm font-medium text-white">
-                                                        {{ substr($user->name, 0, 1) }}
+                                                        {{ substr($user->nama, 0, 1) }}
                                                     </span>
                                                 </div>
                                             @endif
                                         </div>
                                         <div class="ml-4">
-                                            <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
+                                            <div class="text-sm font-medium text-gray-900">{{ $user->nama }}</div>
                                             <div class="text-sm text-gray-500">{{ $user->email }}</div>
                                         </div>
                                     </div>
@@ -79,24 +76,6 @@
                                         {{ ucfirst($user->role) }}
                                     </span>
                                 </td>
-                                {{-- <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    @if($user->role === 'viewer')
-                                        @if($user->assignedCompany)
-                                            <div>
-                                                <div class="font-medium">{{ $user->assignedCompany->name }}</div>
-                                                @if($user->assignedPeriod)
-                                                    <div class="text-xs text-gray-500">
-                                                        Periode: {{ $user->assignedPeriod->period_name }}
-                                                    </div>
-                                                @endif
-                                            </div>
-                                        @else
-                                            <span class="text-red-500 text-sm">Belum di-assign</span>
-                                        @endif
-                                    @else
-                                        <span class="text-gray-400">-</span>
-                                    @endif
-                                </td> --}}
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ $user->created_at->format('d M Y') }}
                                 </td>
@@ -108,28 +87,18 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                             </svg>
                                         </button>
-                                        {{-- New Change Role Button --}}
                                         <button class="bg-purple-600 text-white hover:bg-purple-700 change-role-btn px-3 py-1 rounded-md text-sm font-medium"
                                                 data-user='@json($user)'>
                                             Ubah Role
                                         </button>
                                         <button class="bg-blue-600 text-white hover:bg-blue-700 reset-password-btn px-3 py-1 rounded-md text-sm font-medium"
-                                                data-user-id="{{ $user->id }}"
-                                                data-user-name="{{ $user->name }}">
+                                                data-user-id="{{ $user->user_id }}"
+                                                data-user-name="{{ $user->nama }}">
                                             Ubah Password
                                         </button>
-                                        {{-- @if($user->role === 'viewer' && $user->assignedCompany) --}}
-                                        {{-- <button class="text-orange-600 hover:text-orange-900 unassign-btn"
-                                                data-user-id="{{ $user->id }}"
-                                                data-user-name="{{ $user->name }}">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                            </svg>
-                                        </button> --}}
-                                        {{-- @endif --}}
                                         <button class="text-red-600 hover:text-red-900 delete-user-btn"
-                                                data-user-id="{{ $user->id }}"
-                                                data-user-name="{{ $user->name }}">
+                                                data-user-id="{{ $user->user_id }}"
+                                                data-user-name="{{ $user->nama }}">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                             </svg>
@@ -146,7 +115,7 @@
     </div>
 </div>
 
-{{-- MODAL UNTUK ADD USER (akan memiliki field ROLE) --}}
+{{-- MODAL UNTUK ADD/EDIT USER --}}
 <div id="userModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <div class="mt-3">
@@ -157,7 +126,7 @@
 
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Nama</label>
-                    <input type="text" id="userName" name="name" required
+                    <input type="text" id="userName" name="nama" required
                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                 </div>
 
@@ -173,8 +142,6 @@
                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                 </div>
 
-                {{-- HANYA MUNCULKAN FIELD ROLE KETIKA MENAMBAH USER BARU (method POST) --}}
-                {{-- Kita akan menggunakan JavaScript untuk menentukan kapan ini ditampilkan/disembunyikan --}}
                 <div class="mb-6" id="roleFieldContainer">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
                     <select id="userRole" name="role" required
@@ -200,7 +167,7 @@
     </div>
 </div>
 
-{{-- MODAL UNTUK UBAH ROLE (selalu memiliki field ROLE) --}}
+{{-- MODAL UBAH ROLE --}}
 <div id="changeRoleModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <div class="mt-3">
@@ -233,7 +200,7 @@
     </div>
 </div>
 
-{{-- MODAL UNTUK RESET PASSWORD (selalu memiliki field PASSWORD) --}}
+{{-- MODAL RESET PASSWORD --}}
 <div id="resetPasswordModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <div class="mt-3">
@@ -308,8 +275,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const user = JSON.parse(this.dataset.user);
             document.getElementById('modalTitle').textContent = 'Edit User';
             document.getElementById('formMethod').value = 'PUT';
-            document.getElementById('userId').value = user.id;
-            document.getElementById('userName').value = user.name;
+            document.getElementById('userId').value = user.user_id;
+            document.getElementById('userName').value = user.nama;
             document.getElementById('userEmail').value = user.email;
             
             // Hide password field and make it not required for editing (unless resetting)
@@ -330,7 +297,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.change-role-btn').forEach(button => {
         button.addEventListener('click', function() {
             const user = JSON.parse(this.dataset.user);
-            document.getElementById('changeRoleUserId').value = user.id;
+            document.getElementById('changeRoleUserId').value = user.user_id;
             document.getElementById('changeUserRole').value = user.role; 
             changeRoleModal.classList.remove('hidden');
         });
@@ -530,16 +497,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function resetPassword(userId, formData) {
-        formData.append('_method', 'PUT');
 
         fetch(`/admin/users/${userId}/reset-password`, {
-            method: 'POST', // Use POST for PUT method override
+            method: 'POST', // Change to PUT to correctly match your route
             body: formData,
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            // Handle non-OK HTTP responses
+            if (!response.ok) {
+                return response.json().then(errorData => {
+                    throw new Error(JSON.stringify(errorData));
+                });
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 Swal.fire('Berhasil!', data.message, 'success');
@@ -549,8 +523,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         })
         .catch(error => {
-            Swal.fire('Error!', 'Terjadi kesalahan', 'error');
-            console.error('Error:', error);
+            try {
+                const errorData = JSON.parse(error.message);
+                showErrors(errorData.errors);
+            } catch (e) {
+                Swal.fire('Error!', 'Terjadi kesalahan', 'error');
+                console.error('Error:', error);
+            }
         });
     }
 
