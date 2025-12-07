@@ -35,8 +35,8 @@
     init() {
         // Initialize period selections
         this.companies.forEach(company => {
-            this.selectedPeriodMonth[company.id] = '';
-            this.selectedPeriodYear[company.id] = '';
+            this.selectedPeriodMonth[company.company_id] = '';
+            this.selectedPeriodYear[company.company_id] = '';
         });
         console.log('Initialized with companies:', this.companies);
     },
@@ -54,9 +54,9 @@
 
     selectCompany(company) {
         console.log('Selecting company:', company);
-        this.selectedCompanyId = company.id;
-        this.selectedPeriodMonth[company.id] = '';
-        this.selectedPeriodYear[company.id] = '';
+        this.selectedCompanyId = company.company_id;
+        this.selectedPeriodMonth[company.company_id] = '';
+        this.selectedPeriodYear[company.company_id] = '';
     },
 
     getCompanyYears(company) {
@@ -100,12 +100,12 @@
         );
 
         console.log('Found period:', period);
-        return period ? period.id : null;
+        return period ? period.period_id : null;
     },
 
     submitCompanySelection(company) {
-        const month = this.selectedPeriodMonth[company.id];
-        const year = this.selectedPeriodYear[company.id];
+        const month = this.selectedPeriodMonth[company.company_id];
+        const year = this.selectedPeriodYear[company.company_id];
 
         console.log('Submitting selection:', { company, month, year });
 
@@ -132,7 +132,7 @@
             return;
         }
 
-        fetch(`{{ url('companies') }}/${company.id}/set-active`, {
+        fetch(`{{ url('companies') }}/${company.company_id}/set-active`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -196,7 +196,7 @@
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
-                fetch(`{{ url('companies') }}/${company.id}`, {
+                fetch(`{{ url('companies') }}/${company.company_id}`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
@@ -211,8 +211,8 @@
                 })
                 .then(result => {
                     if (result.success) {
-                        // Remove company from local array
-                        this.companies = this.companies.filter(c => c.id !== company.id);
+                        this.companies = this.companies.filter(c => c.company_id !== company.company_id);
+
 
                         Swal.fire({
                             title: 'Berhasil!',
@@ -297,7 +297,7 @@
     addPeriod(event) {
         const formData = new FormData(event.target);
         const data = {
-            company_id: parseInt(formData.get('company_id')),
+            company_id: formData.get('company_id'),
             period_month: formData.get('period_month'),
             period_year: formData.get('period_year')
         };
@@ -313,7 +313,7 @@
         .then(response => response.json())
         .then(result => {
             if (result.success) {
-                const company = this.companies.find(c => c.id === data.company_id);
+                const company = this.companies.find(c => c.company_id === data.company_id);
                 if (company) {
                     if (!company.periods) company.periods = [];
                     company.periods.push(result.period);
@@ -366,7 +366,7 @@
             email: formData.get('email'),
         };
 
-        fetch(`{{ url('companies') }}/${this.editingCompany.id}`, {
+        fetch(`{{ url('companies') }}/${this.editingCompany.company_id}`, {
             method: 'PUT', // Use PUT method for update
             headers: {
                 'Content-Type': 'application/json',
@@ -378,7 +378,7 @@
         .then(result => {
             if (result.success) {
                 // Find and update the company in the local array
-                const index = this.companies.findIndex(c => c.id === this.editingCompany.id);
+                const index = this.companies.findIndex(c =>  c.company_id=== this.editingCompany.company_id);
                 if (index !== -1) {
                     // Merge updated data with existing company data
                     this.companies[index] = { ...this.companies[index], ...result.company };
@@ -476,9 +476,9 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
-                <template x-for="company in filteredCompanies()" :key="company.id">
+                <template x-for="company in filteredCompanies()" :key="company.company_id">
                     <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-all relative"
-                            :class="{'ring-2 ring-blue-500': selectedCompanyId === company.id}"
+                            :class="{'ring-2 ring-blue-500': selectedCompanyId === company.company_id}"
                             @click="selectCompany(company)">
 
                         <div class="absolute top-4 right-4 flex gap-2">
@@ -534,8 +534,8 @@
                                 <div>
                                     <label class="text-sm font-medium text-gray-700">Tahun:</label>
                                     <select
-                                        x-model="selectedPeriodYear[company.id]"
-                                        @change="selectedPeriodMonth[company.id] = ''"
+                                        x-model="selectedPeriodYear[company.company_id]"
+                                        @change="selectedPeriodMonth[company.company_id] = ''"
                                         class="mt-1 w-full border rounded-md p-2">
                                         <option value="">Pilih Tahun</option>
                                         <template x-for="year in getCompanyYears(company)" :key="year">
@@ -547,25 +547,25 @@
                                 <div>
                                     <label class="text-sm font-medium text-gray-700">Bulan:</label>
                                     <select
-                                        x-model="selectedPeriodMonth[company.id]"
-                                        :disabled="!selectedPeriodYear[company.id]"
-                                        @change="console.log('Selected month:', selectedPeriodMonth[company.id])"
+                                        x-model="selectedPeriodMonth[company.company_id]"
+                                        :disabled="!selectedPeriodYear[company.company_id]"
+                                        @change="console.log('Selected month:', selectedPeriodMonth[company.company_id])"
                                         class="mt-1 w-full border rounded-md p-2">
                                         <option value="">Pilih Bulan</option>
-                                        <template x-for="month in getAvailableMonths(company, selectedPeriodYear[company.id])" :key="month">
+                                        <template x-for="month in getAvailableMonths(company, selectedPeriodYear[company.company_id])" :key="month">
                                             <option :value="month" x-text="month"></option>
                                         </template>
                                     </select>
                                     <div x-show="false">
-                                        <p x-text="'Selected Year: ' + selectedPeriodYear[company.id]"></p>
-                                        <p x-text="'Available Months: ' + JSON.stringify(getAvailableMonths(company, selectedPeriodYear[company.id]))"></p>
+                                        <p x-text="'Selected Year: ' + selectedPeriodYear[company.company_id]"></p>
+                                        <p x-text="'Available Months: ' + JSON.stringify(getAvailableMonths(company, selectedPeriodYear[company.company_id]))"></p>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <button @click.stop="submitCompanySelection(company)"
-                            :disabled="!selectedPeriodMonth[company.id] || !selectedPeriodYear[company.id]"
+                            :disabled="!selectedPeriodMonth[company.company_id] || !selectedPeriodYear[company.company_id]"
                             class="w-full mt-4 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400">
                             Pilih Perusahaan & Periode
                         </button>
@@ -774,8 +774,8 @@
                         <label class="block text-sm font-medium mb-1">Perusahaan</label>
                         <select name="company_id" required class="w-full border rounded-md p-2">
                             <option value="">Pilih Perusahaan</option>
-                            <template x-for="company in companies" :key="company.id">
-                                <option :value="company.id" x-text="company.nama"></option>
+                            <template x-for="company in companies" :key="company.company_id">
+                                <option :value="company.company_id" x-text="company.nama"></option>
                             </template>
                         </select>
                     </div>

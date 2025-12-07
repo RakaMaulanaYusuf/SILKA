@@ -15,7 +15,9 @@ class NeracaController extends Controller
     public function __construct()
     {
         $this->middleware(function ($request, $next) {
-            if (!auth()->user()->active_company_id || !auth()->user()->company_period_id) {
+            // PERBAIKAN: Mengganti active_company_id dan company_period_id
+            // KE: company_id dan period_id (nama kolom di migration users)
+            if (!auth()->user()->company_id || !auth()->user()->period_id) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Silakan pilih perusahaan dan periode terlebih dahulu'
@@ -26,7 +28,9 @@ class NeracaController extends Controller
     }
 
     public function index() {
-        if (!auth()->user()->active_company_id || !auth()->user()->company_period_id) {
+        // PERBAIKAN: Mengganti active_company_id dan company_period_id
+        // KE: company_id dan period_id (nama kolom di migration users)
+        if (!auth()->user()->company_id || !auth()->user()->period_id) {
             return view('staff.neraca', [
                 'aktivalancar' => collect(),
                 'aktivatetap' => collect(),
@@ -36,74 +40,97 @@ class NeracaController extends Controller
             ]);
         }
 
-        $company_id = auth()->user()->active_company_id;
-        $period_id = auth()->user()->company_period_id;
+        // PERBAIKAN: Mengganti active_company_id dan company_period_id
+        // KE: company_id dan period_id (nama kolom di migration users)
+        $company_id = auth()->user()->company_id;
+        $period_id = auth()->user()->period_id;
         
         $availableAccounts = KodeAkun::where('company_id', $company_id)
-            ->where('company_period_id', $period_id)
-            ->where('report_type', 'NERACA')
+            // PERBAIKAN: Mengganti company_period_id
+            ->where('period_id', $period_id)
+            // PERBAIKAN: Mengganti report_type (asumsi pos_laporan di KodeAkun)
+            ->where('pos_laporan', 'NERACA')
             ->get()
             ->map(function($account) {
+                // PERBAIKAN: Mengganti account_id dan name
+                // KE: kode_akun dan nama_akun
+                $balance = $this->getBukuBesarBalance($account->kode_akun);
                 return [
-                    'account_id' => $account->account_id, 
-                    'name' => $account->name,
-                    'balance' => $this->getBukuBesarBalance($account->account_id)
+                    'kode_akun' => $account->kode_akun, 
+                    'nama_akun' => $account->nama_akun,
+                    'balance' => $balance
                 ];
             });
     
         $aktivalancar = AktivaLancar::where('company_id', $company_id)
-            ->where('company_period_id', $period_id)
+            // PERBAIKAN: Mengganti company_period_id
+            ->where('period_id', $period_id)
             ->with('account')
             ->get()
             ->map(function($item) {
+                // PERBAIKAN: Mengganti account_id
+                $balance = $this->getBukuBesarBalance($item->kode_akun);
                 return [
-                    'id' => $item->id,
-                    'account_id' => $item->account_id,
-                    'name' => $item->name,
-                    'amount' => $item->amount,
-                    'balance' => $this->getBukuBesarBalance($item->account_id)
+                    // PERBAIKAN: Mengganti id, account_id, name, jumlah
+                    'id' => $item->aktivalancar_id,
+                    'kode_akun' => $item->kode_akun,
+                    'nama_akun' => $item->nama_akun,
+                    'jumlah' => $item->jumlah,
+                    'balance' => $balance
                 ];
             });
     
         $aktivatetap = AktivaTetap::where('company_id', $company_id)
-            ->where('company_period_id', $period_id)
+            // PERBAIKAN: Mengganti company_period_id
+            ->where('period_id', $period_id)
             ->with('account') 
             ->get()
             ->map(function($item) {
+                // PERBAIKAN: Mengganti account_id
+                $balance = $this->getBukuBesarBalance($item->kode_akun);
                 return [
-                    'id' => $item->id,
-                    'account_id' => $item->account_id,
-                    'name' => $item->name,
-                    'amount' => $item->amount,
-                    'balance' => $this->getBukuBesarBalance($item->account_id)
+                    // PERBAIKAN: Mengganti id, account_id, name, jumlah
+                    'id' => $item->aktivatetap_id,
+                    'kode_akun' => $item->kode_akun,
+                    'nama_akun' => $item->nama_akun,
+                    'jumlah' => $item->jumlah,
+                    'balance' => $balance
                 ];
             });
     
         $kewajiban = Kewajiban::where('company_id', $company_id)
-            ->where('company_period_id', $period_id)
+            // PERBAIKAN: Mengganti company_period_id
+            ->where('period_id', $period_id)
             ->with('account')
             ->get()
             ->map(function($item) {
+                // PERBAIKAN: Mengganti account_id
+                $balance = $this->getBukuBesarBalance($item->kode_akun);
                 return [
-                    'id' => $item->id,
-                    'account_id' => $item->account_id,
-                    'name' => $item->name,
-                    'amount' => $item->amount,
-                    'balance' => $this->getBukuBesarBalance($item->account_id)
+                    // PERBAIKAN: Mengganti id, account_id, name, jumlah
+                    'id' => $item->kewajiban_id,
+                    'kode_akun' => $item->kode_akun,
+                    'nama_akun' => $item->nama_akun,
+                    'jumlah' => $item->jumlah,
+                    'balance' => $balance
                 ];
             });
 
         $ekuitas = Ekuitas::where('company_id', $company_id)
-            ->where('company_period_id', $period_id)
+            // PERBAIKAN: Mengganti company_period_id
+            ->where('period_id', $period_id)
             ->with('account')
             ->get()
             ->map(function($item) {
+                // PERBAIKAN: Mengganti account_id
+                $balance = $this->getBukuBesarBalance($item->kode_akun);
                 return [
-                    'id' => $item->id,
-                    'account_id' => $item->account_id,
-                    'name' => $item->name,
-                    'amount' => $item->amount,
-                    'balance' => $this->getBukuBesarBalance($item->account_id)
+                    // PERBAIKAN: Mengganti id, account_id, name, jumlah
+                    'id' => $item->ekuitas_id,
+                    'kode_akun' => $item->kode_akun,
+                    'nama_akun' => $item->nama_akun,
+                    'jumlah' => $item->jumlah,
+                    'balance' => $balance
                 ];
             });
     
@@ -113,8 +140,10 @@ class NeracaController extends Controller
     public function getBukuBesarBalance($account_id) {
         $bukuBesarController = new \App\Http\Controllers\BukuBesarController(); // Gunakan fully qualified namespace
         $balance = $bukuBesarController->getAccountBalance(
-            auth()->user()->active_company_id,
-            auth()->user()->company_period_id,
+            // PERBAIKAN: Mengganti active_company_id dan company_period_id
+            // KE: company_id dan period_id (nama kolom di migration users)
+            auth()->user()->company_id,
+            auth()->user()->period_id,
             $account_id
         );
         return $balance;
@@ -125,8 +154,10 @@ class NeracaController extends Controller
         try {
             $bukuBesarController = new BukuBesarController();
             $balance = $bukuBesarController->getAccountBalance(
-                auth()->user()->active_company_id,
-                auth()->user()->company_period_id,
+                // PERBAIKAN: Mengganti active_company_id dan company_period_id
+                // KE: company_id dan period_id (nama kolom di migration users)
+                auth()->user()->company_id,
+                auth()->user()->period_id,
                 $accountId
             );
             
@@ -144,27 +175,40 @@ class NeracaController extends Controller
 
     private function getAccountCurrentPosition($account_id)
     {
-        $company_id = auth()->user()->active_company_id;
-        $period_id = auth()->user()->company_period_id;
+        // PERBAIKAN: Mengganti active_company_id dan company_period_id
+        // KE: company_id dan period_id (nama kolom di migration users)
+        $company_id = auth()->user()->company_id;
+        $period_id = auth()->user()->period_id;
 
+        // PERBAIKAN: Mengganti company_period_id dan account_id
+        // KE: period_id dan kode_akun
         if (AktivaLancar::where('company_id', $company_id)
-            ->where('company_period_id', $period_id)
-            ->where('account_id', $account_id)
+            ->where('period_id', $period_id)
+            ->where('kode_akun', $account_id)
             ->exists()) {
             return 'aktivalancar';
-        } elseif (AktivaTetap::where('company_id', $company_id)
-            ->where('company_period_id', $period_id)
-            ->where('account_id', $account_id)
+        } 
+        // PERBAIKAN: Mengganti company_period_id dan account_id
+        // KE: period_id dan kode_akun
+        elseif (AktivaTetap::where('company_id', $company_id)
+            ->where('period_id', $period_id)
+            ->where('kode_akun', $account_id)
             ->exists()) {
             return 'aktivatetap';
-        } elseif (Kewajiban::where('company_id', $company_id)
-            ->where('company_period_id', $period_id)
-            ->where('account_id', $account_id)
+        } 
+        // PERBAIKAN: Mengganti company_period_id dan account_id
+        // KE: period_id dan kode_akun
+        elseif (Kewajiban::where('company_id', $company_id)
+            ->where('period_id', $period_id)
+            ->where('kode_akun', $account_id)
             ->exists()) {
             return 'kewajiban';
-        } elseif (Ekuitas::where('company_id', $company_id)
-            ->where('company_period_id', $period_id)
-            ->where('account_id', $account_id)
+        } 
+        // PERBAIKAN: Mengganti company_period_id dan account_id
+        // KE: period_id dan kode_akun
+        elseif (Ekuitas::where('company_id', $company_id)
+            ->where('period_id', $period_id)
+            ->where('kode_akun', $account_id)
             ->exists()) {
             return 'ekuitas';
         }
@@ -176,20 +220,28 @@ class NeracaController extends Controller
         try {
             $validated = $request->validate([
                 'type' => 'required|in:aktivalancar,aktivatetap,kewajiban,ekuitas',
-                'account_id' => 'required|string',
-                'name' => 'required|string',
-                'amount' => 'required|numeric'
+                // PERBAIKAN: Mengganti account_id menjadi kode_akun
+                'kode_akun' => 'required|string',
+                // PERBAIKAN: Mengganti name menjadi nama_akun
+                'nama_akun' => 'required|string',
+                // PERBAIKAN: Mengganti jumlah menjadi jumlah
+                'jumlah' => 'required|numeric'
             ]);
 
-            $company_id = auth()->user()->active_company_id;
-            $period_id = auth()->user()->company_period_id;
+            // PERBAIKAN: Mengganti active_company_id dan company_period_id
+            // KE: company_id dan period_id (nama kolom di migration users)
+            $company_id = auth()->user()->company_id;
+            $period_id = auth()->user()->period_id;
             
+            // PERBAIKAN: Mengganti company_period_id dan account_id
+            // KE: period_id dan kode_akun
             $account = KodeAkun::where('company_id', $company_id)
-                ->where('company_period_id', $period_id)
-                ->where('account_id', $validated['account_id'])
+                ->where('period_id', $period_id)
+                ->where('kode_akun', $validated['kode_akun'])
                 ->firstOrFail();
 
-            $currentPosition = $this->getAccountCurrentPosition($validated['account_id']);
+            // PERBAIKAN: Mengganti account_id
+            $currentPosition = $this->getAccountCurrentPosition($validated['kode_akun']);
             if ($currentPosition && $currentPosition !== $validated['type']) {
                 throw new \Exception('Akun ini sudah digunakan di kategori ' . ucfirst($currentPosition));
             }
@@ -202,27 +254,31 @@ class NeracaController extends Controller
                 default => throw new \Exception('Invalid type')
             };
 
+            // PERBAIKAN: Mengganti company_period_id, account_id, name, jumlah
+            // KE: period_id, kode_akun, nama_akun, jumlah
             $record = $model::updateOrCreate(
                 [
                     'company_id' => $company_id,
-                    'company_period_id' => $period_id,
-                    'account_id' => $validated['account_id']
+                    'period_id' => $period_id,
+                    'kode_akun' => $validated['kode_akun']
                 ],
                 [
-                    'name' => $validated['name'],
-                    'amount' => $validated['amount']
+                    'nama_akun' => $validated['nama_akun'],
+                    'jumlah' => $validated['jumlah']
                 ]
             );
 
-            $balance = $this->getBukuBesarBalance($record->account_id);
+            // PERBAIKAN: Mengganti account_id
+            $balance = $this->getBukuBesarBalance($record->kode_akun);
             return response()->json([
                 'success' => true,
                 'message' => 'Data berhasil disimpan',
                 'data' => [
-                    'id' => $record->id,
-                    'account_id' => $record->account_id,
-                    'name' => $record->name,
-                    'amount' => $balance,
+                    // PERBAIKAN: Mengganti id, account_id, name, jumlah
+                    'id' => $record->{$model::getPK($validated['type'])},
+                    'kode_akun' => $record->kode_akun,
+                    'nama_akun' => $record->nama_akun,
+                    'jumlah' => $balance,
                     'balance' => $balance
                 ]
             ]);
@@ -235,22 +291,89 @@ class NeracaController extends Controller
         }
     }
 
-    public function update(Request $request, $type, $id)
+    // public function update(Request $request, $type, $id)
+    // {
+    //     try {
+    //         $validated = $request->validate([
+    //             // PERBAIKAN: Mengganti account_id menjadi kode_akun
+    //             'kode_akun' => 'required|string',
+    //             // PERBAIKAN: Mengganti name menjadi nama_akun
+    //             'nama_akun' => 'required|string',
+    //             // PERBAIKAN: Mengganti jumlah menjadi jumlah
+    //             'jumlah' => 'required|numeric'
+    //         ]);
+
+    //         // PERBAIKAN: Mengganti active_company_id dan company_period_id
+    //         // KE: company_id dan period_id (nama kolom di migration users)
+    //         $company_id = auth()->user()->company_id;
+    //         $period_id = auth()->user()->period_id;
+
+    //         // PERBAIKAN: Mengganti company_period_id dan account_id
+    //         // KE: period_id dan kode_akun
+    //         $account = KodeAkun::where('company_id', $company_id)
+    //             ->where('period_id', $period_id)
+    //             ->where('kode_akun', $validated['kode_akun'])
+    //             ->firstOrFail();
+
+    //         $model = match($type) {
+    //             'aktivalancar' => AktivaLancar::class,
+    //             'aktivatetap' => AktivaTetap::class,
+    //             'kewajiban' => Kewajiban::class,
+    //             'ekuitas' => Ekuitas::class,
+    //             default => throw new \Exception('Invalid type')
+    //         };
+
+    //         // PERBAIKAN: Mengganti company_period_id
+    //         $item = $model::where('company_id', $company_id)
+    //             ->where('period_id', $period_id)
+    //             ->findOrFail($id);
+            
+    //         // PERBAIKAN: Mengganti account_id
+    //         if ($item->kode_akun !== $validated['kode_akun']) {
+    //             $currentPosition = $this->getAccountCurrentPosition($validated['kode_akun']);
+    //             if ($currentPosition && $currentPosition !== $type) {
+    //                 throw new \Exception('Akun ini sudah digunakan di kategori ' . ucfirst($currentPosition));
+    //             }
+    //         }
+            
+    //         // PERBAIKAN: Mengganti account_id, name, jumlah
+    //         // KE: kode_akun, nama_akun, jumlah
+    //         $item->update([
+    //             'kode_akun' => $validated['kode_akun'],
+    //             'nama_akun' => $validated['nama_akun'],
+    //             'jumlah' => $validated['jumlah']
+    //         ]);
+    
+    //         // PERBAIKAN: Mengganti account_id
+    //         $balance = $this->getBukuBesarBalance($item->kode_akun);
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'Data berhasil diupdate',
+    //             'data' => [
+    //                 // PERBAIKAN: Mengganti id, account_id, name, jumlah
+    //                 'id' => $item->{$model::getPK($type)},
+    //                 'kode_akun' => $item->kode_akun,
+    //                 'nama_akun' => $item->nama_akun,
+    //                 'jumlah' => $balance,
+    //                 'balance' => $balance
+    //             ]
+    //         ]);
+
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Error: ' . $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
+    public function destroy($type, $id)
     {
         try {
-            $validated = $request->validate([
-                'account_id' => 'required|string',
-                'name' => 'required|string',
-                'amount' => 'required|numeric'
-            ]);
-
-            $company_id = auth()->user()->active_company_id;
-            $period_id = auth()->user()->company_period_id;
-
-            $account = KodeAkun::where('company_id', $company_id)
-                ->where('company_period_id', $period_id)
-                ->where('account_id', $validated['account_id'])
-                ->firstOrFail();
+            // PERBAIKAN: Mengganti active_company_id dan company_period_id
+            // KE: company_id dan period_id (nama kolom di migration users)
+            $company_id = auth()->user()->company_id;
+            $period_id = auth()->user()->period_id;
 
             $model = match($type) {
                 'aktivalancar' => AktivaLancar::class,
@@ -260,129 +383,98 @@ class NeracaController extends Controller
                 default => throw new \Exception('Invalid type')
             };
 
+            // PERBAIKAN: Mengganti company_period_id
             $item = $model::where('company_id', $company_id)
-                ->where('company_period_id', $period_id)
+                ->where('period_id', $period_id)
                 ->findOrFail($id);
-            
-                if ($item->account_id !== $validated['account_id']) {
-                    $currentPosition = $this->getAccountCurrentPosition($validated['account_id']);
-                    if ($currentPosition && $currentPosition !== $type) {
-                        throw new \Exception('Akun ini sudah digunakan di kategori ' . ucfirst($currentPosition));
-                    }
-                }
                 
-                $item->update($validated);
+            $item->delete();
     
-                $balance = $this->getBukuBesarBalance($item->account_id);
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Data berhasil diupdate',
-                    'data' => [
-                        'id' => $item->id,
-                        'account_id' => $item->account_id,
-                        'name' => $item->name,
-                        'amount' => $balance,
-                        'balance' => $balance
-                    ]
-                ]);
-    
-            } catch (\Exception $e) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Error: ' . $e->getMessage()
-                ], 500);
-            }
-        }
-    
-        public function destroy($type, $id)
-        {
-            try {
-                $company_id = auth()->user()->active_company_id;
-                $period_id = auth()->user()->company_period_id;
-    
-                $model = match($type) {
-                    'aktivalancar' => AktivaLancar::class,
-                    'aktivatetap' => AktivaTetap::class,
-                    'kewajiban' => Kewajiban::class,
-                    'ekuitas' => Ekuitas::class,
-                    default => throw new \Exception('Invalid type')
-                };
-    
-                $item = $model::where('company_id', $company_id)
-                    ->where('company_period_id', $period_id)
-                    ->findOrFail($id);
-                    
-                $item->delete();
-    
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Data berhasil dihapus'
-                ]);
-    
-            } catch (\Exception $e) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Error: ' . $e->getMessage()
-                ], 500);
-            }
-        }
-    
-        private function getAllData($company_id, $period_id)
-        {
-            $data = [
-                'aktivalancar' => AktivaLancar::where('company_id', $company_id)
-                    ->where('company_period_id', $period_id)
-                    ->with('account')
-                    ->get()
-                    ->map(function($item) {
-                        return [
-                            'account_id' => $item->account_id,
-                            'name' => $item->name,
-                            'amount' => $item->amount,
-                            'balance' => $this->getBukuBesarBalance($item->account_id)
-                        ];
-                    }),
-    
-                'aktivatetap' => AktivaTetap::where('company_id', $company_id)
-                    ->where('company_period_id', $period_id)
-                    ->with('account')
-                    ->get()
-                    ->map(function($item) {
-                        return [
-                            'account_id' => $item->account_id,
-                            'name' => $item->name,
-                            'amount' => $item->amount,
-                            'balance' => $this->getBukuBesarBalance($item->account_id)
-                        ];
-                    }),
-    
-                'kewajiban' => Kewajiban::where('company_id', $company_id)
-                    ->where('company_period_id', $period_id)
-                    ->with('account')
-                    ->get()
-                    ->map(function($item) {
-                        return [
-                            'account_id' => $item->account_id,
-                            'name' => $item->name,
-                            'amount' => $item->amount,
-                            'balance' => $this->getBukuBesarBalance($item->account_id)
-                        ];
-                    }),
-    
-                'ekuitas' => Ekuitas::where('company_id', $company_id)
-                    ->where('company_period_id', $period_id)
-                    ->with('account')
-                    ->get()
-                    ->map(function($item) {
-                        return [
-                            'account_id' => $item->account_id,
-                            'name' => $item->name,
-                            'amount' => $item->amount,
-                            'balance' => $this->getBukuBesarBalance($item->account_id)
-                        ];
-                    })
-            ];
-    
-            return $data;
+            return response()->json([
+                'success' => true,
+                'message' => 'Data berhasil dihapus'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
         }
     }
+
+    private function getAllData($company_id, $period_id)
+    {
+        $data = [
+            'aktivalancar' => AktivaLancar::where('company_id', $company_id)
+                // PERBAIKAN: Mengganti company_period_id
+                ->where('period_id', $period_id)
+                ->with('account')
+                ->get()
+                ->map(function($item) {
+                    // PERBAIKAN: Mengganti account_id, name, jumlah
+                    // KE: kode_akun, nama_akun, jumlah
+                    $balance = $this->getBukuBesarBalance($item->kode_akun);
+                    return [
+                        'kode_akun' => $item->kode_akun,
+                        'nama_akun' => $item->nama_akun,
+                        'jumlah' => $item->jumlah,
+                        'balance' => $balance
+                    ];
+                }),
+
+            'aktivatetap' => AktivaTetap::where('company_id', $company_id)
+                // PERBAIKAN: Mengganti company_period_id
+                ->where('period_id', $period_id)
+                ->with('account')
+                ->get()
+                ->map(function($item) {
+                    // PERBAIKAN: Mengganti account_id, name, jumlah
+                    // KE: kode_akun, nama_akun, jumlah
+                    $balance = $this->getBukuBesarBalance($item->kode_akun);
+                    return [
+                        'kode_akun' => $item->kode_akun,
+                        'nama_akun' => $item->nama_akun,
+                        'jumlah' => $item->jumlah,
+                        'balance' => $balance
+                    ];
+                }),
+
+            'kewajiban' => Kewajiban::where('company_id', $company_id)
+                // PERBAIKAN: Mengganti company_period_id
+                ->where('period_id', $period_id)
+                ->with('account')
+                ->get()
+                ->map(function($item) {
+                    // PERBAIKAN: Mengganti account_id, name, jumlah
+                    // KE: kode_akun, nama_akun, jumlah
+                    $balance = $this->getBukuBesarBalance($item->kode_akun);
+                    return [
+                        'kode_akun' => $item->kode_akun,
+                        'nama_akun' => $item->nama_akun,
+                        'jumlah' => $item->jumlah,
+                        'balance' => $balance
+                    ];
+                }),
+
+            'ekuitas' => Ekuitas::where('company_id', $company_id)
+                // PERBAIKAN: Mengganti company_period_id
+                ->where('period_id', $period_id)
+                ->with('account')
+                ->get()
+                ->map(function($item) {
+                    // PERBAIKAN: Mengganti account_id, name, jumlah
+                    // KE: kode_akun, nama_akun, jumlah
+                    $balance = $this->getBukuBesarBalance($item->kode_akun);
+                    return [
+                        'kode_akun' => $item->kode_akun,
+                        'nama_akun' => $item->nama_akun,
+                        'jumlah' => $item->jumlah,
+                        'balance' => $balance
+                    ];
+                })
+        ];
+    
+        return $data;
+    }
+}

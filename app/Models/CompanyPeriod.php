@@ -3,13 +3,19 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\AutoIdGenerator;
 
 class CompanyPeriod extends Model
 {
+    //Generate costum id
+    use AutoIdGenerator;
     protected $primaryKey = 'period_id';
     public $incrementing = false;
     protected $keyType = 'string';
     protected $table = 'company_period';
+    
+    public $autoIdField = 'period_id';
+    public $autoIdPrefix = 'PRD';
     
     protected $fillable = [
         'company_id',
@@ -28,7 +34,7 @@ class CompanyPeriod extends Model
 
     public function users()
     {
-        return $this->hasMany(User::class, 'company_period_id');
+        return $this->hasMany(User::class, 'period_id');
     }
 
     // Relasi untuk users yang di-assign ke period ini
@@ -137,19 +143,5 @@ class CompanyPeriod extends Model
             ->where('period_month', $nextMonth)
             ->where('period_year', $nextYear)
             ->first();
-    }
-
-    //Generate costum id
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($period) {
-            $lastPeriod = self::orderBy('period_id', 'desc')->first();
-            $lastNumber = $lastPeriod ? (int) substr($lastPeriod->period_id, 3) : 0;
-            $newNumber = $lastNumber + 1;
-
-            $period->period_id = 'PRD' . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
-        });
     }
 }

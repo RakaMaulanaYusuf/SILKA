@@ -12,13 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('company', function (Blueprint $table) {
-            $table->string('company_id', 100)->primary();
+            $table->char('company_id', 6)->primary();
             $table->string('nama', 50);
-            $table->string('tipe', 50);
-            $table->string('alamat', 50)->nullable();
+            $table->string('tipe', 20);
+            $table->string('alamat', 200)->nullable();
             $table->string('kontak', 12)->nullable();
             $table->string('email', 50)->nullable();
             $table->enum('status', ['Aktif', 'Nonaktif'])->default('Aktif');
+            
             $table->timestamps();
         });
     }

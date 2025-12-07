@@ -35,9 +35,9 @@ class AdminController extends Controller
     public function manageAccounts()
     {
         $users = User::whereIn('role', ['staff', 'admin'])
-            ->with([
-                // 'assignedCompany', 
-                'assignedPeriod'])
+            // ->with([
+            //     // 'assignedCompany', 
+            //     'assignedPeriod'])
             ->latest('user_id')
             ->get();
         
@@ -248,7 +248,7 @@ class AdminController extends Controller
             ->get()
             ->map(function ($period) {
                 return [
-                    'id' => $period->period_id,
+                    'period_id' => $period->period_id,
                     'period_name' => $period->period_month . ' ' . $period->period_year,
                     'period_month' => $period->period_month,
                     'period_year' => $period->period_year

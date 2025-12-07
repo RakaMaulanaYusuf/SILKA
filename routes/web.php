@@ -69,6 +69,10 @@ Route::middleware('auth')->group(function () {
         Route::put('/companies/{company}', [CompanyController::class, 'update'])->name('companies.update'); // New route for update
         Route::post('/periods', [CompanyController::class, 'storePeriod'])->name('periods.store');
 
+        Route::get('/bantuan', function () {
+            return view('staff/bantuanstaff');  
+        })->name('bantuanstaff');
+
         Route::middleware(CheckActiveCompany::class)->group(function () {
             //Dashboard
             Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -102,7 +106,7 @@ Route::middleware('auth')->group(function () {
             // Laba Rugi Routes
             Route::get('/labarugi', [LabaRugiController::class, 'index'])->name('labarugi.index');
             Route::post('/labarugi', [LabaRugiController::class, 'store'])->name('labarugi.store');
-            Route::put('/labarugi/{type}/{id}', [LabaRugiController::class, 'update'])->name('labarugi.update');
+            // Route::put('/labarugi/{type}/{id}', [LabaRugiController::class, 'update'])->name('labarugi.update');
             Route::delete('/labarugi/{type}/{id}', [LabaRugiController::class, 'destroy'])->name('labarugi.destroy');
             Route::get('/labarugi/account/{account_id}', [LabaRugiController::class, 'getDataByAccount'])->name('labarugi.getDataByAccount');
             Route::post('/labarugi/refresh-balances', [LabaRugiController::class, 'refreshBalances'])->name('labarugi.refreshBalances');
@@ -111,7 +115,7 @@ Route::middleware('auth')->group(function () {
             // Neraca Routes
             Route::get('/neraca', [NeracaController::class, 'index'])->name('neraca');
             Route::post('/neraca', [NeracaController::class, 'store']);
-            Route::put('/neraca/{type}/{id}', [NeracaController::class, 'update']);
+            // Route::put('/neraca/{type}/{id}', [NeracaController::class, 'update']);
             Route::delete('/neraca/{type}/{id}', [NeracaController::class, 'destroy']);
             Route::get('/neraca/get-balance/{accountId}', [NeracaController::class, 'getBalance']);
 

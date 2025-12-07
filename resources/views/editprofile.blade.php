@@ -68,7 +68,7 @@
                                      class="w-32 h-32 rounded-full object-cover border-4 border-blue-100 shadow-lg">
                             @else
                                 <div class="w-32 h-32 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center border-4 border-blue-100 shadow-lg">
-                                    <span class="text-3xl font-bold text-white">{{ substr($user->name, 0, 1) }}</span>
+                                    <span class="text-3xl font-bold text-white">{{ substr($user->nama, 0, 1) }}</span>
                                 </div>
                             @endif
                         </div>
@@ -98,15 +98,36 @@
                         </form>
                         
                         @if($user->profile_photo)
-                            <form action="{{ route('profile.delete-photo') }}" method="POST" class="mt-3">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" 
-                                        onclick="return confirm('Apakah Anda yakin ingin menghapus foto profil?')"
-                                        class="w-full bg-red-50 hover:bg-red-100 text-red-600 font-medium py-2 px-4 rounded-lg transition-colors duration-200 border border-red-200">
+                            <div x-data="{ confirmDelete: false }" class="mt-3">
+
+                                <!-- Tombol Delete Pertama -->
+                                <button 
+                                    x-show="!confirmDelete"
+                                    @click="confirmDelete = true"
+                                    class="w-full bg-red-50 hover:bg-red-100 text-red-600 font-medium py-2 px-4 rounded-lg transition">
                                     Hapus Foto
                                 </button>
-                            </form>
+
+                                <!-- Tombol Konfirmasi -->
+                                <div x-show="confirmDelete" x-transition>
+                                    <p class="text-sm text-red-600 mb-2">Yakin ingin menghapus foto?</p>
+
+                                    <form action="{{ route('profile.delete-photo') }}" method="POST">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                            class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition">
+                                            Ya, Hapus
+                                        </button>
+                                    </form>
+
+                                    <button 
+                                        @click="confirmDelete = false"
+                                        class="w-full mt-2 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg transition">
+                                        Batal
+                                    </button>
+                                </div>
+                            </div>
                         @endif
                     </div>
                 </div>
@@ -124,16 +145,16 @@
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+                                <label for="nama" class="block text-sm font-medium text-gray-700 mb-2">
                                     Nama Lengkap
                                 </label>
                                 <input type="text" 
-                                       id="name" 
-                                       name="name" 
-                                       value="{{ old('name', $user->name) }}"
+                                       id="nama" 
+                                       name="nama" 
+                                       value="{{ old('nama', $user->nama) }}"
                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                        required>
-                                @error('name')
+                                @error('nama')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
@@ -261,4 +282,38 @@
         </div>
     </div>
 </div>
+{{-- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    @if(session('success'))
+    <script>
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil',
+            text: '{{ session('success') }}',
+            showConfirmButton: true
+        });
+    </script>
+    @endif
+
+    @if(session('error'))
+    <script>
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: '{{ session('error') }}',
+            showConfirmButton: true
+        });
+    </script>
+    @endif
+
+    @if($errors->any())
+    <script>
+        Swal.fire({
+            icon: 'error',
+            title: 'Validasi Gagal',
+            html: `{!! implode('<br>', $errors->all()) !!}`,
+            showConfirmButton: true
+        });
+    @endif
+</script> --}}
 @endsection

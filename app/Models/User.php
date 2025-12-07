@@ -5,9 +5,14 @@ namespace App\Models;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
+use App\Traits\AutoIdGenerator;
 
 class User extends Authenticatable 
 {
+    //Generate costum id
+    use AutoIdGenerator;
+    public $autoIdField = 'user_id';
+    public $autoIdPrefix = 'USR';
     protected $primaryKey = 'user_id';
     public $incrementing = false;
     protected $keyType = 'string';
@@ -15,9 +20,10 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
     protected $fillable = [
         'nama', 'email', 'password', 'role',
-        'active_company_id', 
+        'company_id', 
         // 'assigned_company_id',
-        'company_period_id', 'assigned_company_period_id'
+        'period_id', 
+        // 'assigned_company_period_id'
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -36,7 +42,7 @@ class User extends Authenticatable
     }
     
     public function activeCompany() {
-        return $this->belongsTo(Company::class, 'active_company_id');
+        return $this->belongsTo(Company::class, 'company_id');
     }
 
     // public function assignedCompany() {
@@ -44,24 +50,10 @@ class User extends Authenticatable
     // }
 
     public function activePeriod() {
-        return $this->belongsTo(CompanyPeriod::class, 'company_period_id');
+        return $this->belongsTo(CompanyPeriod::class, 'period_id');
     }
 
-    public function assignedPeriod() {
-        return $this->belongsTo(CompanyPeriod::class, 'assigned_company_period_id');
-    }
-
-    //Generate costum id
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($user) {
-            $lastUser = self::orderBy('user_id', 'desc')->first();
-            $lastNumber = $lastUser ? (int) substr($lastUser->user_id, 3) : 0;
-            $newNumber = $lastNumber + 1;
-
-            $user->user_id = 'USR' . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
-        });
-    }
+    // public function assignedPeriod() {
+    //     return $this->belongsTo(CompanyPeriod::class, 'assigned_company_period_id');
+    // }
 }

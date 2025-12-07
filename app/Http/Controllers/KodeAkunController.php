@@ -11,7 +11,7 @@ class KodeAkunController extends Controller
     public function __construct()
     {
         $this->middleware(function ($request, $next) {
-            if (!auth()->user()->active_company_id || !auth()->user()->company_period_id) {
+            if (!auth()->user()->company_id || !auth()->user()->period_id) { 
                 return response()->json([
                     'success' => false,
                     'message' => 'Silakan pilih perusahaan dan periode terlebih dahulu'
@@ -23,12 +23,12 @@ class KodeAkunController extends Controller
 
     public function index()
     {
-        if (!auth()->user()->active_company_id || !auth()->user()->company_period_id) {
+        if (!auth()->user()->company_id || !auth()->user()->period_id) {
             return view('staff.kodeakun', ['accounts' => collect()]);
         }
 
-        $accounts = KodeAkun::where('company_id', auth()->user()->active_company_id)
-            ->where('company_period_id', auth()->user()->company_period_id)
+        $accounts = KodeAkun::where('company_id', auth()->user()->company_id)
+            ->where('period_id', auth()->user()->period_id)
             ->orderBy('kode_akun')
             ->get();
             
@@ -43,8 +43,8 @@ class KodeAkunController extends Controller
                     'required',
                     'string',
                     function ($attribute, $value, $fail) {
-                        $exists = KodeAkun::where('company_id', auth()->user()->active_company_id)
-                            ->where('company_period_id', auth()->user()->company_period_id)
+                        $exists = KodeAkun::where('company_id', auth()->user()->company_id)
+                            ->where('period_id', auth()->user()->period_id)
                             ->where('kode_akun', $value)
                             ->exists();
                         
@@ -79,9 +79,8 @@ class KodeAkunController extends Controller
                 ],
             ]);
 
-            // Automatically add company_id and company_period_id
-            $validated['company_id'] = auth()->user()->active_company_id;
-            $validated['company_period_id'] = auth()->user()->company_period_id;
+            $validated['company_id'] = auth()->user()->company_id;
+            $validated['period_id'] = auth()->user()->period_id;
             
             // Set the unused field to null based on pos_saldo
             if ($validated['pos_saldo'] === 'DEBIT') {
@@ -109,20 +108,21 @@ class KodeAkunController extends Controller
 
     public function update(Request $request, KodeAkun $kodeAkun)
     {
-        if ($kodeAkun->company_id !== auth()->user()->active_company_id || 
-            $kodeAkun->company_period_id !== auth()->user()->company_period_id) {
+        if ($kodeAkun->company_id !== auth()->user()->company_id || 
+            $kodeAkun->period_id !== auth()->user()->period_id) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
+        // --- VALIDASI REMAINS THE SAME ---
         $validated = $request->validate([
             'kode_akun' => [
                 'required',
                 'string',
                 function ($attribute, $value, $fail) use ($kodeAkun) {
-                    $exists = KodeAkun::where('company_id', auth()->user()->active_company_id)
-                        ->where('company_period_id', auth()->user()->company_period_id)
+                    $exists = KodeAkun::where('company_id', auth()->user()->company_id)
+                        ->where('period_id', auth()->user()->period_id)
                         ->where('kode_akun', $value)
-                        ->where('id', '!=', $kodeAkun->id)
+                        ->where('kodeakun_id', '!=', $kodeAkun->kodeakun_id) 
                         ->exists();
                     
                     if ($exists) {
@@ -155,6 +155,7 @@ class KodeAkunController extends Controller
                 },
             ],
         ]);
+        // --- END VALIDASI ---
 
         if ($validated['pos_saldo'] === 'DEBIT') {
             $validated['credit'] = null;
@@ -174,8 +175,8 @@ class KodeAkunController extends Controller
 
     public function destroy(KodeAkun $kodeAkun)
     {
-        if ($kodeAkun->company_id !== auth()->user()->active_company_id || 
-            $kodeAkun->company_period_id !== auth()->user()->company_period_id) {
+        if ($kodeAkun->company_id !== auth()->user()->company_id || 
+            $kodeAkun->period_id !== auth()->user()->period_id) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
@@ -186,14 +187,14 @@ class KodeAkunController extends Controller
 
     public function downloadPDF()
     {
-        $accounts = KodeAkun::where('company_id', auth()->user()->active_company_id)
-            ->where('company_period_id', auth()->user()->company_period_id)
+        $accounts = KodeAkun::where('company_id', auth()->user()->company_id)
+            ->where('period_id', auth()->user()->period_id)
             ->orderBy('kode_akun')
             ->get();
 
         $data = [
             'title' => 'Daftar Kode Akun',
-            'companyName' => auth()->user()->active_company->name ?? 'Perusahaan',
+            'companyName' => auth()->user()->company->nama ?? 'Perusahaan', 
             'headers' => [
                 'Kode Akun', 
                 'Nama Akun', 

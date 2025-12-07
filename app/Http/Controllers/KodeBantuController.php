@@ -11,7 +11,7 @@ class KodeBantuController extends Controller
     public function __construct()
     {
         $this->middleware(function ($request, $next) {
-            if (!auth()->user()->active_company_id || !auth()->user()->company_period_id) {
+            if (!auth()->user()->company_id || !auth()->user()->period_id) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Silakan pilih perusahaan dan periode terlebih dahulu'
@@ -23,12 +23,12 @@ class KodeBantuController extends Controller
 
     public function index()
     {
-        if (!auth()->user()->active_company_id || !auth()->user()->company_period_id) {
+        if (!auth()->user()->company_id || !auth()->user()->period_id) {
             return view('staff.kodebantu', ['accounts' => collect()]);
         }
 
-        $accounts = KodeBantu::where('company_id', auth()->user()->active_company_id)
-            ->where('company_period_id', auth()->user()->company_period_id)
+        $accounts = KodeBantu::where('company_id', auth()->user()->company_id)
+            ->where('period_id', auth()->user()->period_id)
             ->orderBy('kode_bantu')
             ->get();
             
@@ -43,8 +43,8 @@ class KodeBantuController extends Controller
                     'required',
                     'string',
                     function ($attribute, $value, $fail) {
-                        $exists = KodeBantu::where('company_id', auth()->user()->active_company_id)
-                            ->where('company_period_id', auth()->user()->company_period_id)
+                        $exists = KodeBantu::where('company_id', auth()->user()->company_id)
+                            ->where('period_id', auth()->user()->period_id)
                             ->where('kode_bantu', $value)
                             ->exists();
                         
@@ -58,8 +58,8 @@ class KodeBantuController extends Controller
                 'balance' => 'nullable|numeric|min:0'
             ]);
 
-            $validated['company_id'] = auth()->user()->active_company_id;
-            $validated['company_period_id'] = auth()->user()->company_period_id;
+            $validated['company_id'] = auth()->user()->company_id;
+            $validated['period_id'] = auth()->user()->period_id;
             
             // Set default value 0 if balance is empty
             $validated['balance'] = $validated['balance'] ?? 0;
@@ -81,8 +81,8 @@ class KodeBantuController extends Controller
 
     public function update(Request $request, KodeBantu $kodeBantu)
     {
-        if ($kodeBantu->company_id !== auth()->user()->active_company_id || 
-            $kodeBantu->company_period_id !== auth()->user()->company_period_id) {
+        if ($kodeBantu->company_id !== auth()->user()->company_id || 
+            $kodeBantu->period_id !== auth()->user()->period_id) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
@@ -91,10 +91,10 @@ class KodeBantuController extends Controller
                 'required',
                 'string',
                 function ($attribute, $value, $fail) use ($kodeBantu) {
-                    $exists = KodeBantu::where('company_id', auth()->user()->active_company_id)
-                        ->where('company_period_id', auth()->user()->company_period_id)
+                    $exists = KodeBantu::where('company_id', auth()->user()->company_id)
+                        ->where('period_id', auth()->user()->period_id)
                         ->where('kode_bantu', $value)
-                        ->where('id', '!=', $kodeBantu->id)
+                        ->where('kodebantu_id', '!=', $kodeBantu->kodebantu_id) 
                         ->exists();
                     
                     if ($exists) {
@@ -120,8 +120,8 @@ class KodeBantuController extends Controller
 
     public function destroy(KodeBantu $kodeBantu)
     {
-        if ($kodeBantu->company_id !== auth()->user()->active_company_id || 
-            $kodeBantu->company_period_id !== auth()->user()->company_period_id) {
+        if ($kodeBantu->company_id !== auth()->user()->company_id || 
+            $kodeBantu->period_id !== auth()->user()->period_id) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
@@ -132,14 +132,14 @@ class KodeBantuController extends Controller
 
     public function downloadPDF()
     {
-        $accounts = KodeBantu::where('company_id', auth()->user()->active_company_id)
-            ->where('company_period_id', auth()->user()->company_period_id)
+        $accounts = KodeBantu::where('company_id', auth()->user()->company_id)
+            ->where('period_id', auth()->user()->period_id)
             ->orderBy('kode_bantu')
             ->get();
 
         $data = [
             'title' => 'Daftar Kode Bantu',
-            'companyName' => auth()->user()->active_company->name ?? 'Perusahaan',
+            'companyName' => auth()->user()->company->nama ?? 'Perusahaan',
             'headers' => [
                 'Kode Bantu',
                 'Nama',

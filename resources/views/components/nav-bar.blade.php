@@ -1,7 +1,7 @@
 {{-- Current Company Indicator --}}
 <div>
     @if(auth()->user()->activeCompany)
-        <div class="sticky top-0 w-full bg-blue-700 text-white py-3 px-6 flex justify-between items-center z-10 shadow-md">
+        <div class="sticky top-0 w-full bg-gradient-to-br from-blue-500 to-purple-700 text-white py-3 px-6 flex justify-between items-center z-10 shadow-md">
             <div class="flex items-center space-x-6">
                 <div class="flex items-center space-x-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-200" viewBox="0 0 20 20" fill="currentColor">
@@ -9,7 +9,7 @@
                     </svg>
                     <div>
                         <span class="text-blue-100 text-sm">Perusahaan</span>
-                        <p class="font-medium">{{ auth()->user()->activeCompany->name }}</p>
+                        <p class="font-medium">{{ auth()->user()->activeCompany->nama }}</p>
                     </div>
                 </div>
                 
@@ -25,7 +25,7 @@
             </div>
             
             <a href="{{ route('listP') }}" 
-               class="flex items-center space-x-2 bg-blue-700 bg-opacity-10 hover:bg-opacity-20 px-4 py-2 rounded-lg transition-all duration-200 group">
+               class="flex items-center space-x-2 bg-blue-600 bg-opacity-10 hover:bg-opacity-20 px-4 py-2 rounded-lg transition-all duration-200 group">
                 <span class="text-sm font-medium">Ganti Perusahaan</span>
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/>

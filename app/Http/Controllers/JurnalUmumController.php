@@ -13,7 +13,7 @@ class JurnalUmumController extends Controller
     public function __construct()
     {
         $this->middleware(function ($request, $next) {
-            if (!auth()->user()->active_company_id || !auth()->user()->company_period_id) {
+            if (!auth()->user()->company_id || !auth()->user()->period_id) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Silakan pilih perusahaan dan periode terlebih dahulu'
@@ -42,7 +42,7 @@ class JurnalUmumController extends Controller
 
     public function index()
     {
-        if (!auth()->user()->active_company_id || !auth()->user()->company_period_id) {
+        if (!auth()->user()->company_id || !auth()->user()->period_id) {
             return view('staff.jurnalumum', [
                 'journals' => collect(),
                 'accounts' => collect(),
@@ -51,23 +51,23 @@ class JurnalUmumController extends Controller
             ]);
         }
 
-        $company_id = auth()->user()->active_company_id;
-        $period_id = auth()->user()->company_period_id;
+        $company_id = auth()->user()->company_id;
+        $period_id = auth()->user()->period_id;
         
         $journals = JurnalUmum::with(['account', 'helper'])
             ->where('company_id', $company_id)
-            ->where('company_period_id', $period_id)
+            ->where('period_id', $period_id)
             ->orderBy('tanggal', 'desc')
             ->orderBy('bukti_transaksi')
             ->get()
             ->map(function($journal) {
                 return [
-                    'id' => $journal->id,
+                    'id' => $journal->jurnalumum_id,
                     'tanggal' => \Carbon\Carbon::parse($journal->tanggal)->format('Y-m-d'), //ini sebenarnya ->date->format('Y-m-d')
                     'bukti_transaksi' => $journal->bukti_transaksi,
                     'keterangan' => $journal->keterangan,
                     'kode_akun' => $journal->kode_akun,
-                    'nama_akun' => $journal->account->nama_akun,
+                    'nama_akun' => $journal->account->nama_akun, 
                     'kode_bantu' => $journal->kode_bantu,
                     'nama_bantu' => $journal->helper?->nama_bantu,
                     'debit' => $journal->debit,
@@ -78,7 +78,7 @@ class JurnalUmumController extends Controller
         $balanceStatus = $this->checkBalance(collect($journals));
 
         $accounts = KodeAkun::where('company_id', $company_id)
-            ->where('company_period_id', $period_id)
+            ->where('period_id', $period_id)
             ->orderBy('kode_akun')
             ->get()
             ->map(function($account) {
@@ -89,7 +89,7 @@ class JurnalUmumController extends Controller
             });
             
         $helpers = KodeBantu::where('company_id', $company_id)
-            ->where('company_period_id', $period_id)
+            ->where('period_id', $period_id)
             ->orderBy('kode_bantu')
             ->get()
             ->map(function($helper) {
@@ -118,8 +118,8 @@ class JurnalUmumController extends Controller
             DB::beginTransaction();
             try {
                 $journal = JurnalUmum::create([
-                    'company_id' => auth()->user()->active_company_id,
-                    'company_period_id' => auth()->user()->company_period_id,
+                    'company_id' => auth()->user()->company_id,
+                    'period_id' => auth()->user()->period_id, 
                     'tanggal' => $validated['tanggal'],
                     'bukti_transaksi' => $validated['bukti_transaksi'],
                     'keterangan' => $validated['keterangan'],
@@ -132,7 +132,7 @@ class JurnalUmumController extends Controller
                 $journal->load(['account', 'helper']);
 
                 $responseData = [
-                    'id' => $journal->id,
+                    'id' => $journal->jurnalumum_id,
                     'tanggal' => \Carbon\Carbon::parse($journal->tanggal)->format('Y-m-d'), //ini
                     'bukti_transaksi' => $journal->bukti_transaksi,
                     'keterangan' => $journal->keterangan,
@@ -168,8 +168,8 @@ class JurnalUmumController extends Controller
     public function update(Request $request, JurnalUmum $jurnalUmum)
     {
         try {
-            if ($jurnalUmum->company_id !== auth()->user()->active_company_id || 
-                $jurnalUmum->company_period_id !== auth()->user()->company_period_id) {
+            if ($jurnalUmum->company_id !== auth()->user()->company_id || 
+                $jurnalUmum->period_id !== auth()->user()->period_id) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized'
@@ -201,7 +201,7 @@ class JurnalUmumController extends Controller
                 $jurnalUmum->load(['account', 'helper']);
 
                 $responseData = [
-                    'id' => $jurnalUmum->id,
+                    'id' => $jurnalUmum->jurnalumum_id,
                     'tanggal' => \Carbon\Carbon::parse($jurnalUmum->tanggal)->format('Y-m-d'), //ini, //ini ->format('Y-m-d')
                     'bukti_transaksi' => $jurnalUmum->bukti_transaksi,
                     'keterangan' => $jurnalUmum->keterangan,
@@ -236,8 +236,8 @@ class JurnalUmumController extends Controller
     public function destroy(JurnalUmum $jurnalUmum)
     {
         try {
-            if ($jurnalUmum->company_id !== auth()->user()->active_company_id || 
-                $jurnalUmum->company_period_id !== auth()->user()->company_period_id) {
+            if ($jurnalUmum->company_id !== auth()->user()->company_id || 
+                $jurnalUmum->period_id !== auth()->user()->period_id) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized'

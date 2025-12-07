@@ -336,27 +336,27 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Unassign Company Buttons
-    document.querySelectorAll('.unassign-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const userId = this.dataset.userId;
-            const userName = this.dataset.userName;
+    // document.querySelectorAll('.unassign-btn').forEach(button => {
+    //     button.addEventListener('click', function() {
+    //         const userId = this.dataset.userId;
+    //         const userName = this.dataset.userName;
 
-            Swal.fire({
-                title: 'Unassign Perusahaan?',
-                text: `Hapus assignment perusahaan dari "${userName}"?`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#f59e0b',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Ya, Unassign!',
-                cancelButtonText: 'Batal'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    unassignCompany(userId);
-                }
-            });
-        });
-    });
+    //         Swal.fire({
+    //             title: 'Unassign Perusahaan?',
+    //             text: `Hapus assignment perusahaan dari "${userName}"?`,
+    //             icon: 'warning',
+    //             showCancelButton: true,
+    //             confirmButtonColor: '#f59e0b',
+    //             cancelButtonColor: '#3085d6',
+    //             confirmButtonText: 'Ya, Unassign!',
+    //             cancelButtonText: 'Batal'
+    //         }).then((result) => {
+    //             if (result.isConfirmed) {
+    //                 unassignCompany(userId);
+    //             }
+    //         });
+    //     });
+    // });
 
     // Close Modal Buttons
     document.getElementById('closeModalBtn').addEventListener('click', () => {
@@ -533,28 +533,28 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function unassignCompany(userId) {
-        fetch(`/admin/users/${userId}/unassign`, {
-            method: 'PUT',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                Swal.fire('Berhasil!', data.message, 'success')
-                    .then(() => location.reload());
-            } else {
-                Swal.fire('Error!', data.message, 'error');
-            }
-        })
-        .catch(error => {
-            Swal.fire('Error!', 'Terjadi kesalahan', 'error');
-            console.error('Error:', error);
-        });
-    }
+    // function unassignCompany(userId) {
+    //     fetch(`/admin/users/${userId}/unassign`, {
+    //         method: 'PUT',
+    //         headers: {
+    //             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+    //             'Content-Type': 'application/json'
+    //         }
+    //     })
+    //     .then(response => response.json())
+    //     .then(data => {
+    //         if (data.success) {
+    //             Swal.fire('Berhasil!', data.message, 'success')
+    //                 .then(() => location.reload());
+    //         } else {
+    //             Swal.fire('Error!', data.message, 'error');
+    //         }
+    //     })
+    //     .catch(error => {
+    //         Swal.fire('Error!', 'Terjadi kesalahan', 'error');
+    //         console.error('Error:', error);
+    //     });
+    // }
 
     function showErrors(errors) {
         let errorMessage = '';

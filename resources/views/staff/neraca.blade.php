@@ -24,44 +24,44 @@
 </style>
 <div class="bg-gray-50 min-h-screen flex flex-col" x-data="{ 
     aktivalancarRows: {{ Js::from($aktivalancar->map(function($item) {
-        return array_merge($item, ['amount' => $item['balance']]);
+        return array_merge($item, ['jumlah' => $item['balance']]);
     })) }},
     aktivatetapRows: {{ Js::from($aktivatetap->map(function($item) {
-        return array_merge($item, ['amount' => $item['balance']]);
+        return array_merge($item, ['jumlah' => $item['balance']]);
     })) }},
     kewajibanRows: {{ Js::from($kewajiban->map(function($item) {
-        return array_merge($item, ['amount' => $item['balance']]);
+        return array_merge($item, ['jumlah' => $item['balance']]);
     })) }},
     ekuitasRows: {{ Js::from($ekuitas->map(function($item) {
-        return array_merge($item, ['amount' => $item['balance']]);
+        return array_merge($item, ['jumlah' => $item['balance']]);
     })) }},
     availableAccounts: {{ Js::from($availableAccounts) }},
     searchTerm: '',
     
     // Objek newRow terpisah untuk setiap tabel
     newRowAktivaLancar: {
-        account_id: '',
-        name: '',
-        amount: 0
+        kode_akun: '',
+        nama_akun: '',
+        jumlah: 0
     },
     newRowAktivaTetap: {
-        account_id: '',
-        name: '',
-        amount: 0
+        kode_akun: '',
+        nama_akun: '',
+        jumlah: 0
     },
     newRowKewajiban: {
-        account_id: '',
-        name: '',
-        amount: 0
+        kode_akun: '',
+        nama_akun: '',
+        jumlah: 0
     },
     newRowEkuitas: {
-        account_id: '',
-        name: '',
-        amount: 0
+        kode_akun: '',
+        nama_akun: '',
+        jumlah: 0
     },
 
     updateNewRowName(accountId, type) {
-        const account = this.availableAccounts.find(acc => acc.account_id === accountId);
+        const account = this.availableAccounts.find(acc => acc.kode_akun === accountId);
         let newRowKey;
         
         switch(type) {
@@ -80,13 +80,13 @@
         }
         
         if (account) {
-            this[newRowKey].account_id = accountId;
-            this[newRowKey].name = account.name;
-            this[newRowKey].amount = account.balance || 0;
+            this[newRowKey].kode_akun = accountId;
+            this[newRowKey].nama_akun = account.nama_akun;
+            this[newRowKey].jumlah = account.balance || 0;
         } else {
-            this[newRowKey].account_id = '';
-            this[newRowKey].name = '';
-            this[newRowKey].amount = 0;
+            this[newRowKey].kode_akun = '';
+            this[newRowKey].nama_akun = '';
+            this[newRowKey].jumlah = 0;
         }
     },
 
@@ -119,9 +119,9 @@
                 },
                 body: JSON.stringify({
                     type: type,
-                    account_id: currentNewRow.account_id,
-                    name: currentNewRow.name,
-                    amount: currentNewRow.amount
+                    kode_akun: currentNewRow.kode_akun,
+                    nama_akun: currentNewRow.nama_akun,
+                    jumlah: currentNewRow.jumlah
                 })
             });
 
@@ -130,9 +130,9 @@
             if (data.success) {
                 const newRowData = { 
                     id: data.data.id,
-                    account_id: currentNewRow.account_id,
-                    name: currentNewRow.name,
-                    amount: Number(data.data.balance) || 0,
+                    kode_akun: currentNewRow.kode_akun,
+                    nama_akun: currentNewRow.nama_akun,
+                    jumlah: Number(data.data.balance) || 0,
                     isEditing: false
                 };
 
@@ -195,7 +195,7 @@
                 break;
         }
         
-        if (!currentNewRow.account_id) {
+        if (!currentNewRow.kode_akun) {
             Swal.fire({
                 title: 'Validasi Gagal!',
                 text: 'Silakan pilih kode akun terlebih dahulu',
@@ -211,16 +211,16 @@
     resetForm(type) {
         switch(type) {
             case 'aktivalancar':
-                this.newRowAktivaLancar = { account_id: '', name: '', amount: 0 };
+                this.newRowAktivaLancar = { kode_akun: '', nama_akun: '', jumlah: 0 };
                 break;
             case 'aktivatetap':
-                this.newRowAktivaTetap = { account_id: '', name: '', amount: 0 };
+                this.newRowAktivaTetap = { kode_akun: '', nama_akun: '', jumlah: 0 };
                 break;
             case 'kewajiban':
-                this.newRowKewajiban = { account_id: '', name: '', amount: 0 };
+                this.newRowKewajiban = { kode_akun: '', nama_akun: '', jumlah: 0 };
                 break;
             case 'ekuitas':
-                this.newRowEkuitas = { account_id: '', name: '', amount: 0 };
+                this.newRowEkuitas = { kode_akun: '', nama_akun: '', jumlah: 0 };
                 break;
         }
     },
@@ -343,7 +343,7 @@
 
     getTotal(type) {
         return this[type + 'Rows'].reduce((sum, row) => {
-            return sum + (Number(row.amount) || 0);
+            return sum + (Number(row.jumlah) || 0);
         }, 0);
     },
 
@@ -468,21 +468,21 @@
                                     <!-- Input Row Aktiva Lancar -->
                                     <tr class="bg-gray-50">
                                         <td class="py-2 px-4 border">
-                                            <select x-model="newRowAktivaLancar.account_id" 
+                                            <select x-model="newRowAktivaLancar.kode_akun" 
                                                     @change="updateNewRowName($event.target.value, 'aktivalancar')"
                                                     class="w-full border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500">
                                                 <option value="">Pilih Kode Akun</option>
-                                                <template x-for="account in availableAccounts" :key="account.account_id">
-                                                    <option :value="account.account_id" x-text="account.account_id"></option>
+                                                <template x-for="account in availableAccounts" :key="account.kode_akun">
+                                                    <option :value="account.kode_akun" x-text="account.kode_akun"></option>
                                                 </template>
                                             </select>
                                         </td>
                                         <td class="py-2 px-4 border">
-                                            <input type="text" x-model="newRowAktivaLancar.name" readonly
+                                            <input type="text" x-model="newRowAktivaLancar.nama_akun" readonly
                                                 class="w-full bg-gray-100 border-gray-300 rounded-md shadow-sm">
                                         </td>
                                         <td class="py-2 px-4 border">
-                                            <input type="text" x-model="newRowAktivaLancar.amount" readonly
+                                            <input type="text" x-model="newRowAktivaLancar.jumlah" readonly
                                                 class="w-full bg-gray-100 border-gray-300 rounded-md shadow-sm text-right">
                                         </td>
                                         <td class="py-2 px-4 border text-center">
@@ -498,13 +498,13 @@
                                     <!-- Existing Rows Aktiva Lancar -->
                                     <template x-for="row in aktivalancarRows" :key="row.id">
                                         <tr :class="{'bg-blue-50': row.isEditing}" class="hover:bg-gray-50">
-                                            <td class="py-2 px-4 border" x-text="row.account_id"></td>
-                                            <td class="py-2 px-4 border" x-text="row.name"></td>
+                                            <td class="py-2 px-4 border" x-text="row.kode_akun"></td>
+                                            <td class="py-2 px-4 border" x-text="row.nama_akun"></td>
                                             <td class="py-2 px-4 border text-right">
                                                 <span class="balance-amount" 
-                                                    :data-account-id="row.account_id"
+                                                    :data-account-id="row.kode_akun"
                                                     data-type="aktivalancar"
-                                                    x-text="formatNumber(row.amount)">
+                                                    x-text="formatNumber(row.jumlah)">
                                                 </span>
                                             </td>
                                             <td class="py-2 px-4 border text-center">
@@ -549,21 +549,21 @@
                                     <!-- Input Row Aktiva Tetap -->
                                     <tr class="bg-gray-50">
                                         <td class="py-2 px-4 border">
-                                            <select x-model="newRowAktivaTetap.account_id" 
+                                            <select x-model="newRowAktivaTetap.kode_akun" 
                                                     @change="updateNewRowName($event.target.value, 'aktivatetap')"
                                                     class="w-full border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500">
                                                 <option value="">Pilih Kode Akun</option>
-                                                <template x-for="account in availableAccounts" :key="account.account_id">
-                                                    <option :value="account.account_id" x-text="account.account_id"></option>
+                                                <template x-for="account in availableAccounts" :key="account.kode_akun">
+                                                    <option :value="account.kode_akun" x-text="account.kode_akun"></option>
                                                 </template>
                                             </select>
                                         </td>
                                         <td class="py-2 px-4 border">
-                                            <input type="text" x-model="newRowAktivaTetap.name" readonly
+                                            <input type="text" x-model="newRowAktivaTetap.nama_akun" readonly
                                                 class="w-full bg-gray-100 border-gray-300 rounded-md shadow-sm">
                                         </td>
                                         <td class="py-2 px-4 border">
-                                            <input type="text" x-model="newRowAktivaTetap.amount" readonly
+                                            <input type="text" x-model="newRowAktivaTetap.jumlah" readonly
                                                 class="w-full bg-gray-100 border-gray-300 rounded-md shadow-sm text-right">
                                         </td>
                                         <td class="py-2 px-4 border text-center">
@@ -579,13 +579,13 @@
                                     <!-- Existing Rows Aktiva Tetap -->
                                     <template x-for="row in aktivatetapRows" :key="row.id">
                                         <tr :class="{'bg-blue-50': row.isEditing}" class="hover:bg-gray-50">
-                                            <td class="py-2 px-4 border" x-text="row.account_id"></td>
-                                            <td class="py-2 px-4 border" x-text="row.name"></td>
+                                            <td class="py-2 px-4 border" x-text="row.kode_akun"></td>
+                                            <td class="py-2 px-4 border" x-text="row.nama_akun"></td>
                                             <td class="py-2 px-4 border text-right">
                                                 <span class="balance-amount" 
-                                                    :data-account-id="row.account_id"
+                                                    :data-account-id="row.kode_akun"
                                                     data-type="aktivatetap"
-                                                    x-text="formatNumber(row.amount)">
+                                                    x-text="formatNumber(row.jumlah)">
                                                 </span>
                                             </td>
                                             <td class="py-2 px-4 border text-center">
@@ -614,7 +614,7 @@
                     </div>
 
                     <!-- Total Aktiva -->
-                    <div class="bg-blue-100 p-4 rounded-lg">
+                    <div class="bg-blue-200 p-4 rounded-lg">
                         <div class="flex justify-between items-center">
                             <span class="font-bold text-blue-800">TOTAL AKTIVA</span>
                             <span class="font-bold text-blue-800" x-text="formatNumber(getTotalAktiva())"></span>
@@ -641,21 +641,21 @@
                                     <!-- Input Row Kewajiban -->
                                     <tr class="bg-gray-50">
                                         <td class="py-2 px-4 border">
-                                            <select x-model="newRowKewajiban.account_id" 
+                                            <select x-model="newRowKewajiban.kode_akun" 
                                                     @change="updateNewRowName($event.target.value, 'kewajiban')"
                                                     class="w-full border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500">
                                                 <option value="">Pilih Kode Akun</option>
-                                                <template x-for="account in availableAccounts" :key="account.account_id">
-                                                    <option :value="account.account_id" x-text="account.account_id"></option>
+                                                <template x-for="account in availableAccounts" :key="account.kode_akun">
+                                                    <option :value="account.kode_akun" x-text="account.kode_akun"></option>
                                                 </template>
                                             </select>
                                         </td>
                                         <td class="py-2 px-4 border">
-                                            <input type="text" x-model="newRowKewajiban.name" readonly
+                                            <input type="text" x-model="newRowKewajiban.nama_akun" readonly
                                                 class="w-full bg-gray-100 border-gray-300 rounded-md shadow-sm">
                                         </td>
                                         <td class="py-2 px-4 border">
-                                            <input type="text" x-model="newRowKewajiban.amount" readonly
+                                            <input type="text" x-model="newRowKewajiban.jumlah" readonly
                                                 class="w-full bg-gray-100 border-gray-300 rounded-md shadow-sm text-right">
                                         </td>
                                         <td class="py-2 px-4 border text-center">
@@ -671,13 +671,13 @@
                                     <!-- Existing Rows Kewajiban -->
                                     <template x-for="row in kewajibanRows" :key="row.id">
                                         <tr :class="{'bg-blue-50': row.isEditing}" class="hover:bg-gray-50">
-                                            <td class="py-2 px-4 border" x-text="row.account_id"></td>
-                                            <td class="py-2 px-4 border" x-text="row.name"></td>
+                                            <td class="py-2 px-4 border" x-text="row.kode_akun"></td>
+                                            <td class="py-2 px-4 border" x-text="row.nama_akun"></td>
                                             <td class="py-2 px-4 border text-right">
                                                 <span class="balance-amount" 
-                                                    :data-account-id="row.account_id"
+                                                    :data-account-id="row.kode_akun"
                                                     data-type="kewajiban"
-                                                    x-text="formatNumber(row.amount)">
+                                                    x-text="formatNumber(row.jumlah)">
                                                 </span>
                                             </td>
                                             <td class="py-2 px-4 border text-center">
@@ -722,21 +722,21 @@
                                     <!-- Input Row Ekuitas -->
                                     <tr class="bg-gray-50">
                                         <td class="py-2 px-4 border">
-                                            <select x-model="newRowEkuitas.account_id" 
+                                            <select x-model="newRowEkuitas.kode_akun" 
                                                     @change="updateNewRowName($event.target.value, 'ekuitas')"
                                                     class="w-full border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500">
                                                 <option value="">Pilih Kode Akun</option>
-                                                <template x-for="account in availableAccounts" :key="account.account_id">
-                                                    <option :value="account.account_id" x-text="account.account_id"></option>
+                                                <template x-for="account in availableAccounts" :key="account.kode_akun">
+                                                    <option :value="account.kode_akun" x-text="account.kode_akun"></option>
                                                 </template>
                                             </select>
                                         </td>
                                         <td class="py-2 px-4 border">
-                                            <input type="text" x-model="newRowEkuitas.name" readonly
+                                            <input type="text" x-model="newRowEkuitas.nama_akun" readonly
                                                 class="w-full bg-gray-100 border-gray-300 rounded-md shadow-sm">
                                         </td>
                                         <td class="py-2 px-4 border">
-                                            <input type="text" x-model="newRowEkuitas.amount" readonly
+                                            <input type="text" x-model="newRowEkuitas.jumlah" readonly
                                                 class="w-full bg-gray-100 border-gray-300 rounded-md shadow-sm text-right">
                                         </td>
                                         <td class="py-2 px-4 border text-center">
@@ -752,13 +752,13 @@
                                     <!-- Existing Rows Ekuitas -->
                                     <template x-for="row in ekuitasRows" :key="row.id">
                                         <tr :class="{'bg-blue-50': row.isEditing}" class="hover:bg-gray-50">
-                                            <td class="py-2 px-4 border" x-text="row.account_id"></td>
-                                            <td class="py-2 px-4 border" x-text="row.name"></td>
+                                            <td class="py-2 px-4 border" x-text="row.kode_akun"></td>
+                                            <td class="py-2 px-4 border" x-text="row.nama_akun"></td>
                                             <td class="py-2 px-4 border text-right">
                                                 <span class="balance-amount" 
-                                                    :data-account-id="row.account_id"
+                                                    :data-account-id="row.kode_akun"
                                                     data-type="ekuitas"
-                                                    x-text="formatNumber(row.amount)">
+                                                    x-text="formatNumber(row.jumlah)">
                                                 </span>
                                             </td>
                                             <td class="py-2 px-4 border text-center">
@@ -787,7 +787,7 @@
                     </div>
 
                     <!-- Total Pasiva -->
-                    <div class="bg-blue-100 p-4 rounded-lg">
+                    <div class="bg-blue-200 p-4 rounded-lg">
                         <div class="flex justify-between items-center">
                             <span class="font-bold text-blue-800">TOTAL PASIVA</span>
                             <span class="font-bold text-blue-800" x-text="formatNumber(getTotalPassiva())"></span>
@@ -797,7 +797,7 @@
             </div>
 
             <!-- Print Button -->
-            <div class="flex justify-end mt-6">
+            <div class="flex justify-between mt-6">
                 <button onclick="window.location.href = '{{ route('pdf.neraca') }}'"
                         class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center space-x-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -826,7 +826,7 @@
                 if(data.success) {
                     const row = element.closest('tr').__x.$data;
                     if (row && row.row) {
-                        row.row.amount = data.balance;
+                        row.row.jumlah = data.balance;
                         element.textContent = formatNumber(data.balance);
                         document.dispatchEvent(new CustomEvent('balance-updated'));
                     }

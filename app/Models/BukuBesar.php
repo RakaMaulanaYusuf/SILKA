@@ -7,6 +7,9 @@ class BukuBesar extends Model
 {
     protected $table = 'jurnal_umum';
     protected $guarded = [];
+    protected $primaryKey = 'jurnalumum_id';
+    public $incrementing = false;
+    protected $keyType = 'string';
     
     public function kodeAkun()
     {

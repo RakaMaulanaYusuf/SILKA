@@ -5,16 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Validator;
+use App\Traits\AutoIdGenerator;
 
 class JurnalUmum extends Model
 {
     use HasFactory;
 
     protected $table = 'jurnal_umum';
+    protected $primaryKey = 'jurnalumum_id';
+    public $incrementing = false;
+    protected $keyType = 'string';
 
     protected $fillable = [
         'company_id',
-        'company_period_id',
+        'period_id',
         'tanggal',
         'bukti_transaksi',
         'keterangan',
@@ -62,7 +66,7 @@ class JurnalUmum extends Model
 
     public function period()
     {
-        return $this->belongsTo(CompanyPeriod::class, 'company_period_id');
+        return $this->belongsTo(CompanyPeriod::class, 'period_id');
     }
 
     protected function validateData($data)
@@ -75,4 +79,9 @@ class JurnalUmum extends Model
 
         return true;
     }
+
+    use AutoIdGenerator;
+    public $autoIdField = 'jurnalumum_id';
+    public $autoIdPrefix = 'JUR';
+    
 }

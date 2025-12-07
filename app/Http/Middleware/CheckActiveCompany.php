@@ -16,7 +16,7 @@ class CheckActiveCompany
             return $next($request);
         }
         
-        if ($user && $user->role === 'staff' && (!$user->active_company_id || !$user->company_period_id)) {
+        if ($user && $user->role === 'staff' && (!$user->company_id || !$user->period_id)) {
             return redirect('/listP') // Pakai URL langsung, bukan route()
                 ->with('warning', 'Silakan pilih perusahaan dan periode terlebih dahulu');
         }

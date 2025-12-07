@@ -13,12 +13,10 @@ return new class extends Migration
     {
         Schema::create('active_companies', function (Blueprint $table) {
             $table->id('aktifcompanyid');
-            $table->string('user_id', 100);
+            $table->char('user_id', 6);
             $table->foreign('user_id')->references('user_id')->on('users')->onDelete('cascade');
-            // $table->foreignId('user_id')->constrained('users', 'user_id')->onDelete('cascade');
-            $table->string('company_id', 100);
+            $table->char('company_id', 6);
             $table->foreign('company_id')->references('company_id')->on('company')->onDelete('cascade');
-            // $table->foreignId('company_id')->constrained('company', 'company_id')->onDelete('cascade');
             $table->timestamps();
         });
     }

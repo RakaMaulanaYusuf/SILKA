@@ -24,13 +24,13 @@
 </style>
 <div class="bg-gray-50 min-h-screen flex flex-col" x-data="{ 
     pendapatanRows: {{ Js::from($pendapatan->map(function($item) {
-        return array_merge($item, ['amount' => $item['balance']]);
+        return array_merge($item, ['jumlah' => $item['balance']]);
     })) }},
     hppRows: {{ Js::from($hpp->map(function($item) {
-        return array_merge($item, ['amount' => $item['balance']]);
+        return array_merge($item, ['jumlah' => $item['balance']]);
     })) }},
     operasionalRows: {{ Js::from($biaya->map(function($item) {
-        return array_merge($item, ['amount' => $item['balance']]);
+        return array_merge($item, ['jumlah' => $item['balance']]);
     })) }},
     availableAccounts: {{ Js::from($availableAccounts) }},
     searchTerm: '',
@@ -38,23 +38,23 @@
     
     // Objek newRow terpisah untuk setiap tabel
     newRowPendapatan: {
-        account_id: '',
-        name: '',
-        amount: 0
+        kode_akun: '',
+        nama_akun: '',
+        jumlah: 0
     },
     newRowHpp: {
-        account_id: '',
-        name: '',
-        amount: 0
+        kode_akun: '',
+        nama_akun: '',
+        jumlah: 0
     },
     newRowOperasional: {
-        account_id: '',
-        name: '',
-        amount: 0
+        kode_akun: '',
+        nama_akun: '',
+        jumlah: 0
     },
 
     updateNewRowName(accountId, section) {
-        const account = this.availableAccounts.find(acc => acc.account_id === accountId);
+        const account = this.availableAccounts.find(acc => acc.kode_akun === accountId);
         let newRowKey;
         
         switch(section) {
@@ -70,13 +70,13 @@
         }
         
         if (account) {
-            this[newRowKey].account_id = accountId;
-            this[newRowKey].name = account.name;
-            this[newRowKey].amount = account.balance || 0;
+            this[newRowKey].kode_akun = accountId;
+            this[newRowKey].nama_akun = account.nama_akun;
+            this[newRowKey].jumlah = account.balance || 0;
         } else {
-            this[newRowKey].account_id = '';
-            this[newRowKey].name = '';
-            this[newRowKey].amount = 0;
+            this[newRowKey].kode_akun = '';
+            this[newRowKey].nama_akun = '';
+            this[newRowKey].jumlah = 0;
         }
     },
 
@@ -106,9 +106,9 @@
                 },
                 body: JSON.stringify({
                     type: section,
-                    account_id: currentNewRow.account_id,
-                    name: currentNewRow.name,
-                    amount: currentNewRow.amount
+                    kode_akun: currentNewRow.kode_akun,
+                    nama_akun: currentNewRow.nama_akun,
+                    jumlah: currentNewRow.jumlah
                 })
             });
 
@@ -117,9 +117,9 @@
             if (data.success) {
                 const newRowData = { 
                     id: data.data.id,
-                    account_id: currentNewRow.account_id,
-                    name: currentNewRow.name,
-                    amount: Number(data.data.balance) || 0,
+                    kode_akun: currentNewRow.kode_akun,
+                    nama_akun: currentNewRow.nama_akun,
+                    jumlah: Number(data.data.balance) || 0,
                     isEditing: false
                 };
 
@@ -177,7 +177,7 @@
                 break;
         }
         
-        if (!currentNewRow.account_id) {
+        if (!currentNewRow.kode_akun) {
             Swal.fire({
                 title: 'Validasi Gagal!',
                 text: 'Silakan pilih kode akun terlebih dahulu',
@@ -193,13 +193,13 @@
     resetForm(section) {
         switch(section) {
             case 'pendapatan':
-                this.newRowPendapatan = { account_id: '', name: '', amount: 0 };
+                this.newRowPendapatan = { kode_akun: '', nama_akun: '', jumlah: 0 };
                 break;
             case 'hpp':
-                this.newRowHpp = { account_id: '', name: '', amount: 0 };
+                this.newRowHpp = { kode_akun: '', nama_akun: '', jumlah: 0 };
                 break;
             case 'operasional':
-                this.newRowOperasional = { account_id: '', name: '', amount: 0 };
+                this.newRowOperasional = { kode_akun: '', nama_akun: '', jumlah: 0 };
                 break;
         }
     },
@@ -228,7 +228,7 @@
                 delete row.originalData;
                 Object.assign(row, {
                     ...data.data,
-                    amount: Number(data.data.balance) || 0
+                    jumlah: Number(data.data.balance) || 0
                 });
                 
                 Swal.fire({
@@ -326,7 +326,7 @@
         const rows = type === 'pendapatan' ? this.pendapatanRows :
                     type === 'hpp' ? this.hppRows :
                     this.operasionalRows;
-        return rows.reduce((sum, row) => sum + (Number(row.amount) || 0), 0);
+        return rows.reduce((sum, row) => sum + (Number(row.jumlah) || 0), 0);
     },
 
     getTotalPendapatan() {
@@ -360,8 +360,8 @@
 
     getFilteredRows(rows) {
         return rows.filter(row => 
-            (row.name?.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-            row.account_id?.toLowerCase().includes(this.searchTerm.toLowerCase()))
+            (row.nama_akun?.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+            row.kode_akun?.toLowerCase().includes(this.searchTerm.toLowerCase()))
         );
     },
 
@@ -416,21 +416,21 @@
                             <!-- Input Row untuk Pendapatan -->
                             <tr class="bg-gray-50">
                                 <td class="py-2 px-4 border">
-                                    <select x-model="newRowPendapatan.account_id" 
+                                    <select x-model="newRowPendapatan.kode_akun" 
                                             @change="updateNewRowName($event.target.value, 'pendapatan')"
                                             class="w-full border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500">
                                         <option value="">Pilih Kode Akun</option>
-                                        <template x-for="account in availableAccounts" :key="account.account_id">
-                                            <option :value="account.account_id" x-text="account.account_id"></option>
+                                        <template x-for="account in availableAccounts" :key="account.kode_akun">
+                                            <option :value="account.kode_akun" x-text="account.kode_akun"></option>
                                         </template>
                                     </select>
                                 </td>
                                 <td class="py-2 px-4 border">
-                                    <input type="text" x-model="newRowPendapatan.name" readonly
+                                    <input type="text" x-model="newRowPendapatan.nama_akun" readonly
                                            class="w-full bg-gray-100 border-gray-300 rounded-md shadow-sm">
                                 </td>
                                 <td class="py-2 px-4 border">
-                                    <input type="text" x-model="newRowPendapatan.amount" readonly
+                                    <input type="text" x-model="newRowPendapatan.jumlah" readonly
                                            class="w-full bg-gray-100 border-gray-300 rounded-md shadow-sm text-right">
                                 </td>
                                 <td class="py-2 px-4 border"></td>
@@ -447,26 +447,26 @@
                             <!-- Existing Rows untuk Pendapatan -->
                             <template x-for="row in getFilteredRows(pendapatanRows)" :key="row.id">
                                 <tr :class="{'bg-blue-50': row.isEditing}" class="hover:bg-gray-50">
-                                    <td class="py-2 px-4 border" x-text="row.account_id"></td>
-                                    <td class="py-2 px-4 border" x-text="row.name"></td>
+                                    <td class="py-2 px-4 border" x-text="row.kode_akun"></td>
+                                    <td class="py-2 px-4 border" x-text="row.nama_akun"></td>
                                     <td class="py-2 px-4 border text-right">
                                         <span class="balance-amount" 
                                               data-type="pendapatan"
-                                              :data-account-id="row.account_id"
-                                              x-text="formatNumber(row.amount)">
+                                              :data-account-id="row.kode_akun"
+                                              x-text="formatNumber(row.jumlah)">
                                         </span>
                                     </td>
                                     <td class="py-2 px-4 border"></td>
                                     <td class="py-2 px-4 border text-center">
                                         <template x-if="!row.isEditing">
                                             <div class="flex justify-center gap-2">
-                                                <button @click="startEdit(row, 'pendapatan')" 
+                                                {{-- <button @click="startEdit(row, 'pendapatan')" 
                                                         class="p-1 text-blue-600 hover:bg-blue-50 rounded">
                                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                                                               d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                                     </svg>
-                                                </button>
+                                                </button> --}}
                                                 <button @click="deleteRow(row, 'pendapatan')" 
                                                         class="p-1 text-red-600 hover:bg-red-50 rounded">
                                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -478,20 +478,20 @@
                                         </template>
                                         <template x-if="row.isEditing">
                                             <div class="flex justify-center gap-2">
-                                                <button @click="saveEdit(row)" 
+                                                {{-- <button @click="saveEdit(row)" 
                                                         class="p-1 text-green-600 hover:bg-green-50 rounded">
                                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                                                               d="M5 13l4 4L19 7" />
                                                     </svg>
-                                                </button>
-                                                <button @click="cancelEdit(row)" 
+                                                </button> --}}
+                                                {{-- <button @click="cancelEdit(row)" 
                                                         class="p-1 text-red-600 hover:bg-red-50 rounded">
                                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                                                               d="M6 18L18 6M6 6l12 12" />
                                                     </svg>
-                                                </button>
+                                                </button> --}}
                                             </div>
                                         </template>
                                     </td>
@@ -530,21 +530,21 @@
                             <!-- Input Row untuk HPP -->
                             <tr class="bg-gray-50">
                                 <td class="py-2 px-4 border">
-                                    <select x-model="newRowHpp.account_id" 
+                                    <select x-model="newRowHpp.kode_akun" 
                                             @change="updateNewRowName($event.target.value, 'hpp')"
                                             class="w-full border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500">
                                         <option value="">Pilih Kode Akun</option>
-                                        <template x-for="account in availableAccounts" :key="account.account_id">
-                                            <option :value="account.account_id" x-text="account.account_id"></option>
+                                        <template x-for="account in availableAccounts" :key="account.kode_akun">
+                                            <option :value="account.kode_akun" x-text="account.kode_akun"></option>
                                         </template>
                                     </select>
                                 </td>
                                 <td class="py-2 px-4 border">
-                                    <input type="text" x-model="newRowHpp.name" readonly
+                                    <input type="text" x-model="newRowHpp.nama_akun" readonly
                                            class="w-full bg-gray-100 border-gray-300 rounded-md shadow-sm">
                                 </td>
                                 <td class="py-2 px-4 border">
-                                    <input type="text" x-model="newRowHpp.amount" readonly
+                                    <input type="text" x-model="newRowHpp.jumlah" readonly
                                            class="w-full bg-gray-100 border-gray-300 rounded-md shadow-sm text-right">
                                 </td>
                                 <td class="py-2 px-4 border"></td>
@@ -561,26 +561,26 @@
                             <!-- Existing Rows untuk HPP -->
                             <template x-for="row in getFilteredRows(hppRows)" :key="row.id">
                                 <tr :class="{'bg-blue-50': row.isEditing}" class="hover:bg-gray-50">
-                                    <td class="py-2 px-4 border" x-text="row.account_id"></td>
-                                    <td class="py-2 px-4 border" x-text="row.name"></td>
+                                    <td class="py-2 px-4 border" x-text="row.kode_akun"></td>
+                                    <td class="py-2 px-4 border" x-text="row.nama_akun"></td>
                                     <td class="py-2 px-4 border text-right">
                                         <span class="balance-amount" 
                                               data-type="hpp"
-                                              :data-account-id="row.account_id"
-                                              x-text="formatNumber(row.amount)">
+                                              :data-account-id="row.kode_akun"
+                                              x-text="formatNumber(row.jumlah)">
                                         </span>
                                     </td>
                                     <td class="py-2 px-4 border"></td>
                                     <td class="py-2 px-4 border text-center">
                                         <template x-if="!row.isEditing">
                                             <div class="flex justify-center gap-2">
-                                                <button @click="startEdit(row, 'hpp')" 
+                                                {{-- <button @click="startEdit(row, 'hpp')" 
                                                         class="p-1 text-blue-600 hover:bg-blue-50 rounded">
                                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                                                               d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                                     </svg>
-                                                </button>
+                                                </button> --}}
                                                 <button @click="deleteRow(row, 'hpp')" 
                                                         class="p-1 text-red-600 hover:bg-red-50 rounded">
                                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -592,7 +592,7 @@
                                         </template>
                                         <template x-if="row.isEditing">
                                             <div class="flex justify-center gap-2">
-                                                <button @click="saveEdit(row)" 
+                                                {{-- <button @click="saveEdit(row)" 
                                                         class="p-1 text-green-600 hover:bg-green-50 rounded">
                                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
@@ -605,7 +605,7 @@
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                                                               d="M6 18L18 6M6 6l12 12" />
                                                     </svg>
-                                                </button>
+                                                </button> --}}
                                             </div>
                                         </template>
                                     </td>
@@ -644,21 +644,21 @@
                             <!-- Input Row untuk Biaya Operasional -->
                             <tr class="bg-gray-50">
                                 <td class="py-2 px-4 border">
-                                    <select x-model="newRowOperasional.account_id" 
+                                    <select x-model="newRowOperasional.kode_akun" 
                                             @change="updateNewRowName($event.target.value, 'operasional')"
                                             class="w-full border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500">
                                         <option value="">Pilih Kode Akun</option>
-                                        <template x-for="account in availableAccounts" :key="account.account_id">
-                                            <option :value="account.account_id" x-text="account.account_id"></option>
+                                        <template x-for="account in availableAccounts" :key="account.kode_akun">
+                                            <option :value="account.kode_akun" x-text="account.kode_akun"></option>
                                         </template>
                                     </select>
                                 </td>
                                 <td class="py-2 px-4 border">
-                                    <input type="text" x-model="newRowOperasional.name" readonly
+                                    <input type="text" x-model="newRowOperasional.nama_akun" readonly
                                            class="w-full bg-gray-100 border-gray-300 rounded-md shadow-sm">
                                 </td>
                                 <td class="py-2 px-4 border">
-                                    <input type="text" x-model="newRowOperasional.amount" readonly
+                                    <input type="text" x-model="newRowOperasional.jumlah" readonly
                                            class="w-full bg-gray-100 border-gray-300 rounded-md shadow-sm text-right">
                                 </td>
                                 <td class="py-2 px-4 border"></td>
@@ -675,26 +675,26 @@
                             <!-- Existing Rows untuk Biaya Operasional -->
                             <template x-for="row in getFilteredRows(operasionalRows)" :key="row.id">
                                 <tr :class="{'bg-blue-50': row.isEditing}" class="hover:bg-gray-50">
-                                    <td class="py-2 px-4 border" x-text="row.account_id"></td>
-                                    <td class="py-2 px-4 border" x-text="row.name"></td>
+                                    <td class="py-2 px-4 border" x-text="row.kode_akun"></td>
+                                    <td class="py-2 px-4 border" x-text="row.nama_akun"></td>
                                     <td class="py-2 px-4 border text-right">
                                         <span class="balance-amount" 
                                               data-type="operasional"
-                                              :data-account-id="row.account_id"
-                                              x-text="formatNumber(row.amount)">
+                                              :data-account-id="row.kode_akun"
+                                              x-text="formatNumber(row.jumlah)">
                                         </span>
                                     </td>
                                     <td class="py-2 px-4 border"></td>
                                     <td class="py-2 px-4 border text-center">
                                         <template x-if="!row.isEditing">
                                             <div class="flex justify-center gap-2">
-                                                <button @click="startEdit(row, 'operasional')" 
+                                                {{-- <button @click="startEdit(row, 'operasional')" 
                                                         class="p-1 text-blue-600 hover:bg-blue-50 rounded">
                                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                                                               d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                                     </svg>
-                                                </button>
+                                                </button> --}}
                                                 <button @click="deleteRow(row, 'operasional')" 
                                                         class="p-1 text-red-600 hover:bg-red-50 rounded">
                                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -706,7 +706,7 @@
                                         </template>
                                         <template x-if="row.isEditing">
                                             <div class="flex justify-center gap-2">
-                                                <button @click="saveEdit(row)" 
+                                                {{-- <button @click="saveEdit(row)" 
                                                         class="p-1 text-green-600 hover:bg-green-50 rounded">
                                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
@@ -719,7 +719,7 @@
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                                                               d="M6 18L18 6M6 6l12 12" />
                                                     </svg>
-                                                </button>
+                                                </button> --}}
                                             </div>
                                         </template>
                                     </td>
@@ -743,8 +743,8 @@
             <!-- Laba/Rugi Bersih -->
             <div class="mt-8 mb-8">
                 <div class="flex flex-row gap-4">
-                    <div class="w-full rounded-lg bg-blue-50 p-3 flex flex-row items-center justify-between">
-                        <h2 class="text-base font-semibold text-blue-800 ml-4">LABA/RUGI BERSIH</h2>
+                    <div class="w-full rounded-lg bg-blue-200 p-3 flex flex-row items-center justify-between">
+                        <h2 class="text-base font-semibold text-blue-800 ml-4">LABA RUGI BERSIH</h2>
                         <p class="text-lg font-bold mr-4" :class="getLabaBersih() >= 0 ? 'text-green-600' : 'text-red-600'" 
                         x-text="formatNumber(getLabaBersih())"></p>
                     </div>
@@ -782,7 +782,7 @@
                 if(data.success) {
                     const row = element.closest('tr').__x.$data;
                     if (row && row.row) {
-                        row.row.amount = data.balance;
+                        row.row.jumlah = data.balance;
                         element.textContent = formatNumber(data.balance);
                         
                         document.dispatchEvent(new CustomEvent('balance-updated'));

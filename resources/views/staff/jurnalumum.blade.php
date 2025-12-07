@@ -256,16 +256,16 @@
                                 <th class="border border-blue-500 px-4 py-2">KETERANGAN</th>
                                 <th colspan="2" class="border border-blue-500 px-4 py-2">POS AKUN</th>
                                 <th colspan="2" class="border border-blue-500 px-4 py-2">KODE BANTU</th>
-                                <th class="border border-blue-500 px-4 py-2 w-32">DEBET</th>
+                                <th class="border border-blue-500 px-4 py-2 w-32">DEBIT</th>
                                 <th class="border border-blue-500 px-4 py-2 w-32">KREDIT</th>
                                 <th class="border border-blue-500 px-4 py-2 w-16">AKSI</th>
                             </tr>
                             <tr class="bg-blue-600 text-white text-sm">
                                 <th colspan="3" class="border border-blue-500 px-4 py-2"></th>
                                 <th class="border border-blue-500 px-4 py-2">NAMA AKUN</th>
-                                <th class="border border-blue-500 px-4 py-2">KODE</th>
-                                <th class="border border-blue-500 px-4 py-2">NAMA</th>
-                                <th class="border border-blue-500 px-4 py-2">KODE</th>
+                                <th class="border border-blue-500 px-4 py-2">KODE AKUN</th>
+                                <th class="border border-blue-500 px-4 py-2">NAMA BANTU</th>
+                                <th class="border border-blue-500 px-4 py-2">KODE BANTU</th>
                                 <th colspan="3" class="border border-blue-500 px-4 py-2"></th>
                             </tr>
                         </thead>
@@ -508,7 +508,7 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
                         </svg>
-                        <span>PRINT</span>
+                        <span>Print PDF</span>
                     </button>
                 </div>
             </div>

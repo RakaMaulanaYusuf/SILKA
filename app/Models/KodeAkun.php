@@ -3,14 +3,18 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\AutoIdGenerator;
 
 class KodeAkun extends Model
 {
     protected $table = 'kode_akun';
+    protected $primaryKey = 'kodeakun_id';
+    public $incrementing = false;
+    protected $keyType = 'string';
     
     protected $fillable = [
         'company_id',
-        'company_period_id',  
+        'period_id',  
         'kode_akun',
         'nama_akun',
         'tabel_bantuan',
@@ -34,11 +38,15 @@ class KodeAkun extends Model
 
     public function period()
     {
-        return $this->belongsTo(CompanyPeriod::class, 'company_period_id');
+        return $this->belongsTo(CompanyPeriod::class, 'period_id');
     }
 
     public function journalEntries()
     {
         return $this->hasMany(JurnalUmum::class, 'kode_akun', 'kode_akun');
     }
+
+    use AutoIdGenerator;
+    public $autoIdField = 'kodeakun_id';
+    public $autoIdPrefix = 'AKN';
 }

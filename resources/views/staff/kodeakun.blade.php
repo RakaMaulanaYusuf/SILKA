@@ -132,7 +132,7 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    this.accounts = this.accounts.filter(account => account.id !== accountId);
+                    this.accounts = this.accounts.filter(account => account.kodeakun_id !== accountId);
                     showAlert('success', 'Akun berhasil dihapus');
                 } else {
                     showAlert('error', result.message || 'Terjadi kesalahan saat menghapus data');
@@ -151,7 +151,7 @@
         if (!this.validateForm(account)) return;
 
         try {
-            const response = await fetch(`/kodeakun/${account.id}`, {
+            const response = await fetch(`/kodeakun/${account.kodeakun_id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -213,7 +213,7 @@
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead>
                             <tr class="bg-blue-600 text-white text-sm">
-                                <th class="py-3 px-4 text-left border-b border-r w-20">ACCOUNT ID</th>
+                                <th class="py-3 px-4 text-left border-b border-r w-20">KODE AKUN</th>
                                 <th class="py-3 px-4 text-left border-b border-r w-96">NAMA AKUN</th>
                                 <th class="py-3 px-4 text-left border-b border-r w-24">TABEL BANTUAN</th>
                                 <th class="py-3 px-4 text-left border-b border-r w-28">POS SALDO</th>
@@ -223,7 +223,7 @@
                             <tr class="bg-blue-600 text-white text-sm">
                                 <th class="py-3 px-4 border-r" colspan="5"></th>
                                 <th class="py-3 px-4 text-center border-r w-36">DEBIT</th>
-                                <th class="py-3 px-4 text-center border-r w-36">CREDIT</th>
+                                <th class="py-3 px-4 text-center border-r w-36">KREDIT</th>
                                 <th class="py-3 px-4 text-center w-16">AKSI</th>
                             </tr>
                         </thead>
@@ -384,7 +384,7 @@
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                                     </svg>
                                                 </button>
-                                                <button @click="deleteAccount(account.id)" 
+                                                <button @click="deleteAccount(account.kodeakun_id)" 
                                                     class="p-1 text-red-600 hover:bg-red-50 rounded">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -435,7 +435,7 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
                         </svg>
-                        <span>PRINT</span>
+                        <span>Print PDF</span>
                     </button>
                 </div>
             </div>

@@ -22,7 +22,7 @@ class CompanyController extends Controller
                     'companies.destroy',
                     'companies.update'
                 ])) {
-                    if (!auth()->user()->active_company_id) {
+                    if (!auth()->user()->company_id) { 
                         return redirect()->route('listP')
                             ->with('warning', 'Silakan pilih perusahaan terlebih dahulu');
                     }
@@ -36,11 +36,10 @@ class CompanyController extends Controller
     {
         $companies = Company::with(['periods' => function ($query) {
             $query->orderBy('period_year', 'desc')
-                  ->orderBy('period_month', 'desc');
+                    ->orderBy('period_month', 'desc');
         }])->get();
 
-        // dd($companies);
-        $activeCompany = Auth::user()->activeCompany;
+        $activeCompany = Auth::user()->company; 
         
         return view('staff.listperusahaan', compact('companies', 'activeCompany'));
     }
@@ -50,27 +49,27 @@ class CompanyController extends Controller
         DB::beginTransaction();
         try {
             $validated = $request->validate([
-                'nama'         => 'required|string|max:255',
-                'tipe'         => 'required|string|max:255',
-                'alamat'       => 'required|string|max:255',
-                'kontak'       => 'required|string|max:255',
-                'email'        => 'required|string|max:255',
-                'period_month' => 'required|string',
-                'period_year'  => 'required|integer|min:2000|max:2099',
+                'nama'          => 'required|string|max:255',
+                'tipe'          => 'required|string|max:255',
+                'alamat'        => 'required|string|max:255',
+                'kontak'        => 'required|string|max:255',
+                'email'         => 'required|string|max:255',
+                'period_month'  => 'required|string',
+                'period_year'   => 'required|integer|min:2000|max:2099',
             ]);
 
             $company = Company::create([
-                'nama'   => $validated['nama'],
-                'tipe'   => $validated['tipe'],
+                'nama'  => $validated['nama'],
+                'tipe'  => $validated['tipe'],
                 'alamat' => $validated['alamat'],
                 'kontak' => $validated['kontak'],
                 'email'  => $validated['email'],
             ]);
 
             $period = CompanyPeriod::create([
-                'company_id'   => $company->id,
-                'period_month' => $validated['period_month'],
-                'period_year'  => $validated['period_year']
+                'company_id'    => $company->company_id,
+                'period_month'  => $validated['period_month'],
+                'period_year'   => $validated['period_year']
             ]);
 
             DB::commit();
@@ -94,9 +93,9 @@ class CompanyController extends Controller
     {
         try {
             $validated = $request->validate([
-                'company_id'   => 'required|exists:company,id',
-                'period_month' => 'required|string',
-                'period_year'  => 'required|integer|min:2000|max:2099'
+                'company_id'    => 'required|exists:company,company_id', 
+                'period_month'  => 'required|string',
+                'period_year'   => 'required|integer|min:2000|max:2099'
             ]);
 
             // Cek duplicate period
@@ -113,14 +112,14 @@ class CompanyController extends Controller
             }
 
             $period = CompanyPeriod::create([
-                'company_id'   => $validated['company_id'],
-                'period_month' => $validated['period_month'],
-                'period_year'  => $validated['period_year']
+                'company_id'    => $validated['company_id'],
+                'period_month'  => $validated['period_month'],
+                'period_year'   => $validated['period_year']
             ]);
 
             return response()->json([
                 'success' => true,
-                'period'  => $period
+                'period'    => $period
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -134,14 +133,14 @@ class CompanyController extends Controller
     {
         try {
             $validated = $request->validate([
-                'period_id' => 'required|exists:company_period,id,company_id,' . $company->id
+                'period_id' => 'required|exists:company_period,period_id,company_id,' . $company->company_id
             ]);
 
             $user = Auth::user();
 
             $user->update([
-                'active_company_id' => $company->id,
-                'company_period_id' => $validated['period_id']
+                'company_id' => $company->company_id, 
+                'period_id' => $validated['period_id']
             ]);
 
             return response()->json([
@@ -160,8 +159,7 @@ class CompanyController extends Controller
     {
         DB::beginTransaction();
         try {
-            // Cek apakah perusahaan sedang aktif dipakai user
-            $activeUsers = \App\Models\User::where('active_company_id', $company->id)->count();
+            $activeUsers = \App\Models\User::where('company_id', $company->company_id)->count(); 
 
             if ($activeUsers > 0) {
                 return response()->json([
@@ -171,7 +169,7 @@ class CompanyController extends Controller
             }
 
             // Hapus semua periode terkait perusahaan
-            CompanyPeriod::where('company_id', $company->id)->delete();
+            CompanyPeriod::where('company_id', $company->company_id)->delete();
 
             // Hapus perusahaan
             $company->delete();

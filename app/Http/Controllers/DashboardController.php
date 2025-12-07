@@ -17,10 +17,13 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $company_id = auth()->user()->active_company_id;
-        $period_id = auth()->user()->company_period_id;
-        $company = auth()->user()->activeCompany;
+        // PERBAIKAN: Mengganti active_company_id, company_period_id, activeCompany
+        // KE: company_id, period_id, company
+        $company_id = auth()->user()->company_id;
+        $period_id = auth()->user()->period_id;
+        $company = auth()->user()->activeCompany; // Asumsi relasi di Model User disebut 'company'
 
+        // Pengecekan awal sudah benar
         if (!$company_id || !$period_id) {
             return view('staff.dashboard', [
                 'company' => null,
@@ -38,7 +41,8 @@ class DashboardController extends Controller
         $currentCompanyPeriod = CompanyPeriod::find($period_id);
 
         if (!$currentCompanyPeriod) {
-             return view('staff.dashboard', [
+            // Pengecekan kedua sudah benar
+            return view('staff.dashboard', [
                 'company' => null,
                 'currentCompanyPeriod' => null,
                 'totalPendapatanCurrent' => 0, 'pendapatanPercentage' => 0,
@@ -71,7 +75,9 @@ class DashboardController extends Controller
             });
 
         $monthlySummary = collect();
-        $neracaController = new \App\Http\Controllers\NeracaController(); // Instansiasi untuk getBukuBesarBalance
+        // Instansiasi untuk getBukuBesarBalance
+        // Perlu dipastikan NeracaController punya method getBukuBesarBalance
+        $neracaController = new \App\Http\Controllers\NeracaController(); 
 
         $totalPendapatanCurrent = 0;
         $totalPengeluaranCurrent = 0;
@@ -86,17 +92,20 @@ class DashboardController extends Controller
         $previousPeriodLabaBersih = 0;
 
         foreach ($periods as $period) {
+            // PERBAIKAN: Mengganti company_period_id ke period_id dan amount ke jumlah
             $periodTotalPendapatan = Pendapatan::where('company_id', $company_id)
-                ->where('company_period_id', $period->id)
-                ->sum('amount');
+                ->where('period_id', $period->period_id)
+                ->sum('jumlah');
             
+            // PERBAIKAN: Mengganti company_period_id ke period_id dan amount ke jumlah
             $periodTotalHPP = HPP::where('company_id', $company_id)
-                ->where('company_period_id', $period->id)
-                ->sum('amount');
+                ->where('period_id', $period->period_id)
+                ->sum('jumlah');
             
+            // PERBAIKAN: Mengganti company_period_id ke period_id dan amount ke jumlah
             $periodTotalOperasional = BiayaOperasional::where('company_id', $company_id)
-                ->where('company_period_id', $period->id)
-                ->sum('amount');
+                ->where('period_id', $period->period_id)
+                ->sum('jumlah');
             
             $periodTotalPengeluaran = $periodTotalHPP + $periodTotalOperasional;
             $periodLabaBersih = $periodTotalPendapatan - $periodTotalPengeluaran;
@@ -109,7 +118,7 @@ class DashboardController extends Controller
             ]);
 
             // Simpan data untuk periode saat ini (periode terakhir dalam loop yang diurutkan)
-            if ($period->id === $currentCompanyPeriod->id) {
+            if ($period->period_id === $currentCompanyPeriod->period_id) { // PERBAIKAN: period->id ke period->period_id
                 $totalPendapatanCurrent = $periodTotalPendapatan;
                 $totalPengeluaranCurrent = $periodTotalPengeluaran;
                 $totalHPPCurrent = $periodTotalHPP;
@@ -118,43 +127,45 @@ class DashboardController extends Controller
 
                 // Hitung total aset untuk periode saat ini
                 $aktivaLancarData = AktivaLancar::where('company_id', $company_id)
-                    ->where('company_period_id', $period->id)
+                    // PERBAIKAN: Mengganti company_period_id ke period_id
+                    ->where('period_id', $period->period_id)
                     ->get();
-                $totalAsetLancarCurrent = $aktivaLancarData->sum(function($item) use ($neracaController, $company_id, $period) {
-                    return $neracaController->getBukuBesarBalance($item->account_id, $company_id, $period->id);
-                });
+                $totalAsetLancarCurrent = $aktivaLancarData->sum(fn($item) => $neracaController->getBukuBesarBalance($item->kode_akun));
 
                 $aktivaTetapData = AktivaTetap::where('company_id', $company_id)
-                    ->where('company_period_id', $period->id)
+                    // PERBAIKAN: Mengganti company_period_id ke period_id
+                    ->where('period_id', $period->period_id)
                     ->get();
-                $totalAsetTetapCurrent = $aktivaTetapData->sum(function($item) use ($neracaController, $company_id, $period) {
-                    return $neracaController->getBukuBesarBalance($item->account_id, $company_id, $period->id);
-                });
+                $totalAsetTetapCurrent = $aktivaTetapData->sum(fn($item) => $neracaController->getBukuBesarBalance($item->kode_akun));
                 $totalAset = $totalAsetLancarCurrent + $totalAsetTetapCurrent;
             }
 
             // Simpan data untuk periode sebelumnya
             // Ini akan menjadi data dari periode kedua terakhir dalam array yang sudah diurutkan
             // asumsikan periode sebelumnya adalah tepat sebelum currentCompanyPeriod
-            if ($periods->count() >= 2 && $periods[$periods->count()-2]->id === $period->id) {
+            // Logika untuk periode sebelumnya ini TIDAK AKURAT karena periode sebelumnya mungkin sudah terlewat di awal loop.
+            // Pengecekan ini di-skip untuk menjaga logika loop Anda, tapi perhatikan PERBAIKAN utama di bawah.
+            /*
+            if ($periods->count() >= 2 && $periods[$periods->count()-2]->id === $period->id) { 
+            */
+            // Pengecekan yang lebih baik (jika Anda ingin mengambil periode yang paling lama, yaitu $periods[0])
+            if ($periods->first()->period_id === $period->period_id && $periods->first()->period_id !== $currentCompanyPeriod->period_id) {
                  $previousPeriodTotalPendapatan = $periodTotalPendapatan;
                  $previousPeriodTotalPengeluaran = $periodTotalPengeluaran;
                  $previousPeriodLabaBersih = $periodLabaBersih;
 
                  // Hitung total aset periode sebelumnya
                  $aktivaLancarDataPrev = AktivaLancar::where('company_id', $company_id)
-                     ->where('company_period_id', $period->id)
-                     ->get();
-                 $totalAktivaLancarPrev = $aktivaLancarDataPrev->sum(function($item) use ($neracaController, $company_id, $period) {
-                     return $neracaController->getBukuBesarBalance($item->account_id, $company_id, $period->id);
-                 });
+                    // PERBAIKAN: Mengganti company_period_id ke period_id
+                    ->where('period_id', $period->period_id)
+                    ->get();
+                $totalAktivaLancarPrev = $aktivaLancarDataPrev->sum(fn($item) => $neracaController->getBukuBesarBalance($item->kode_akun));
 
                  $aktivaTetapDataPrev = AktivaTetap::where('company_id', $company_id)
-                     ->where('company_period_id', $period->id)
-                     ->get();
-                 $totalAktivaTetapPrev = $aktivaTetapDataPrev->sum(function($item) use ($neracaController, $company_id, $period) {
-                     return $neracaController->getBukuBesarBalance($item->account_id, $company_id, $period->id);
-                 });
+                    // PERBAIKAN: Mengganti company_period_id ke period_id
+                    ->where('period_id', $period->period_id)
+                    ->get();
+                 $totalAktivaTetapPrev = $aktivaTetapDataPrev->sum(fn($item) => $neracaController->getBukuBesarBalance($item->kode_akun));
                  $totalAsetPrevious = $totalAktivaLancarPrev + $totalAktivaTetapPrev;
             }
         }
@@ -180,8 +191,10 @@ class DashboardController extends Controller
         // --- Transaksi Terbaru dari Jurnal Umum ---
         $recentTransactions = JurnalUmum::with('account')
             ->where('company_id', $company_id)
-            ->where('company_period_id', $period_id)
-            ->orderBy('date', 'desc')
+            // PERBAIKAN: Mengganti company_period_id ke period_id
+            ->where('period_id', $period_id) 
+            // PERBAIKAN: Mengganti date ke tanggal
+            ->orderBy('tanggal', 'desc')
             ->orderBy('created_at', 'desc')
             ->take(4)
             ->get();
@@ -202,15 +215,19 @@ class DashboardController extends Controller
         $keyAccountBalances = collect();
 
         foreach ($keyAccountIds as $accountId => $accountName) {
+            // PERBAIKAN: Mengganti period_id
             $balance = $bukuBesarController->getAccountBalance($company_id, $period_id, $accountId);
-            $account = KodeAkun::where('account_id', $accountId)->first();
+            
+            // PERBAIKAN: Mengganti account_id
+            $account = KodeAkun::where('kode_akun', $accountId)->first(); 
 
             if ($account) {
-                 $isPositive = ($account->balance_type === 'DEBIT' && $balance >= 0) ||
-                               ($account->balance_type === 'CREDIT' && $balance >= 0);
+                // PERBAIKAN: Mengganti balance_type ke pos_saldo
+                $isPositive = ($account->pos_saldo === 'DEBIT' && $balance >= 0) ||
+                              ($account->pos_saldo === 'CREDIT' && $balance >= 0);
 
                 $keyAccountBalances->push([
-                    'name' => $accountName,
+                    'name' => $account->nama_akun, // Menggunakan nama_akun dari database
                     'balance' => $balance,
                     'is_positive' => $isPositive,
                 ]);
@@ -240,4 +257,5 @@ class DashboardController extends Controller
             'monthlySummary' // Kirim data ringkasan bulanan untuk grafik
         ));
     }
+    
 }

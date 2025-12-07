@@ -3,14 +3,22 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\AutoIdGenerator;
 
 class Company extends Model
 {
+    //Generate costum id
+    use AutoIdGenerator;
     protected $primaryKey = 'company_id';
     public $incrementing = false;
     protected $keyType = 'string';
     protected $table = 'company';
+
+    
+    public $autoIdField = 'company_id';
+    public $autoIdPrefix = 'CMP';
     protected $fillable = [
+        'company_id',
         'nama',
         'tipe', 
         'alamat',
@@ -26,7 +34,7 @@ class Company extends Model
 
     public function users()
     {
-        return $this->hasMany(User::class, 'active_company_id');
+        return $this->hasMany(User::class, 'company_id');
     }
 
     // Relasi untuk viewers yang di-assign ke company ini
@@ -58,17 +66,5 @@ class Company extends Model
         };
     }
 
-    //Generate costum id
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($company) {
-            $lastCompany = self::orderBy('company_id', 'desc')->first();
-            $lastNumber = $lastCompany ? (int) substr($lastCompany->company_id, 3) : 0;
-            $newNumber = $lastNumber + 1;
-
-            $company->company_id = 'CMP' . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
-        });
-    }
+    
 }

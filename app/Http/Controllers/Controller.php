@@ -15,7 +15,7 @@ class Controller extends BaseController
         $this->middleware(function ($request, $next) {
             if (auth()->check() 
                 && auth()->user()->role !== 'admin'
-                && !auth()->user()->active_company_id 
+                && !auth()->user()->company_id 
                 && !in_array($request->route()->getName(), ['listP', 'companies.store', 'companies.setActive'])) {
 
                 return redirect()->route('listP')

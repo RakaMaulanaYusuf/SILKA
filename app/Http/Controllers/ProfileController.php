@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
 {
@@ -20,34 +23,46 @@ class ProfileController extends Controller
     public function updateProfile(Request $request)
     {
         $user = Auth::user();
-        
-        // Handle profile information update only
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+
+        $validator = Validator::make($request->all(), [
+            'nama' => 'required|string|max:255',
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'max:255',
+                Rule::unique('users')->ignore($user->user_id, 'user_id')
+            ],
         ]);
 
-        $user->name = $request->name;
-        $user->email = $request->email;
-        $user->save();
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->with('error', 'Gagal menyimpan perubahan!');
+        }
+
+        $user->update([
+            'nama' => $request->nama,
+            'email' => $request->email,
+        ]);
 
         return back()->with('success', 'Profil berhasil diperbarui!');
     }
 
     public function updatePhoto(Request $request)
     {
-        $user = Auth::user();
-        
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'profile_photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
-        // Delete old photo if exists
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->with('error', 'Gagal mengupload foto profil!');
+        }
+
+        $user = Auth::user();
+
         if ($user->profile_photo && Storage::disk('public')->exists($user->profile_photo)) {
             Storage::disk('public')->delete($user->profile_photo);
         }
 
-        // Store new photo
         $photoPath = $request->file('profile_photo')->store('profile-photos', 'public');
         $user->profile_photo = $photoPath;
         $user->save();
@@ -57,23 +72,24 @@ class ProfileController extends Controller
 
     public function updatePassword(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'current_password' => 'required',
-            'password' => ['required', 'confirmed', Password::min(8)],
+            'password' => 'required|string|min:8|confirmed'
         ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->with('error', 'Gagal memperbarui password!');
+        }
 
         $user = Auth::user();
 
-        // Check if current password is correct
         if (!Hash::check($request->current_password, $user->password)) {
-            return back()->withErrors([
-                'current_password' => 'Password saat ini tidak sesuai.'
-            ]);
+            return back()->with('error', 'Password saat ini tidak sesuai.');
         }
 
-        // Update password
-        $user->password = Hash::make($request->password);
-        $user->save();
+        $user->update([
+            'password' => Hash::make($request->password)
+        ]);
 
         return back()->with('success', 'Password berhasil diperbarui!');
     }
@@ -81,14 +97,14 @@ class ProfileController extends Controller
     public function deletePhoto()
     {
         $user = Auth::user();
-        
+
         if ($user->profile_photo && Storage::disk('public')->exists($user->profile_photo)) {
             Storage::disk('public')->delete($user->profile_photo);
         }
-        
+
         $user->profile_photo = null;
         $user->save();
 
-        return back()->with('success', 'Foto profil berhasil dihapus!');
+        return back()->with('success', 'Photo profile berhasil dihapus!');
     }
 }
