@@ -80,43 +80,53 @@ class KodeBantuController extends Controller
     }
 
     public function update(Request $request, KodeBantu $kodeBantu)
-    {
-        if ($kodeBantu->company_id !== auth()->user()->company_id || 
-            $kodeBantu->period_id !== auth()->user()->period_id) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
-        }
-
-        $validated = $request->validate([
-            'kode_bantu' => [
-                'required',
-                'string',
-                function ($attribute, $value, $fail) use ($kodeBantu) {
-                    $exists = KodeBantu::where('company_id', auth()->user()->company_id)
-                        ->where('period_id', auth()->user()->period_id)
-                        ->where('kode_bantu', $value)
-                        ->where('kodebantu_id', '!=', $kodeBantu->kodebantu_id) 
-                        ->exists();
-                    
-                    if ($exists) {
-                        $fail('Kode bantu sudah digunakan dalam periode ini.');
-                    }
-                },
-            ],
-            'nama_bantu' => 'required|string',
-            'status' => 'required|in:PIUTANG,HUTANG',
-            'balance' => 'nullable|numeric|min:0'
-        ]);
-
-        // Set default value 0 if balance is empty
-        $validated['balance'] = $validated['balance'] ?? 0;
-
-        $kodeBantu->update($validated);
-        
-        return response()->json([
-            'success' => true,
-            'account' => $kodeBantu
-        ]);
+{
+    // 1. Otorisasi: Pastikan data milik perusahaan dan periode yang aktif
+    if ($kodeBantu->company_id !== auth()->user()->company_id || 
+        $kodeBantu->period_id !== auth()->user()->period_id) {
+        return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
     }
+
+    // 2. Validasi
+    $validated = $request->validate([
+        'kode_bantu' => [
+            'required',
+            'string',
+            function ($attribute, $value, $fail) use ($kodeBantu) {
+                // Cek keunikan kode_bantu dalam lingkup company dan period yang sama
+                $exists = KodeBantu::where('company_id', auth()->user()->company_id)
+                    ->where('period_id', auth()->user()->period_id)
+                    ->where('kode_bantu', $value)
+                    ->where('kodebantu_id', '!=', $kodeBantu->kodebantu_id) // Pastikan ID primary key benar
+                    ->exists();
+                
+                if ($exists) {
+                    $fail('Kode bantu sudah digunakan dalam periode ini.');
+                }
+            },
+        ],
+        'nama_bantu' => 'required|string|max:255',
+        'status'     => 'required|in:PIUTANG,HUTANG',
+        'balance'    => 'nullable|numeric|min:0'
+    ]);
+
+    // 3. Sinkronisasi Data (Clean up)
+    // Pastikan balance selalu angka (0 jika kosong)
+    $validated['balance'] = $validated['balance'] ?? 0;
+
+    // Tambahan Keamanan: Pastikan data tidak pindah company/period saat update
+    $validated['company_id'] = auth()->user()->company_id;
+    $validated['period_id'] = auth()->user()->period_id;
+
+    // 4. Eksekusi Update
+    $kodeBantu->update($validated);
+    
+    return response()->json([
+        'success' => true,
+        'message' => 'Kode Bantu berhasil diperbarui',
+        'account' => $kodeBantu->fresh() // Mengambil data terbaru dari database
+    ]);
+}
 
     public function destroy(KodeBantu $kodeBantu)
     {

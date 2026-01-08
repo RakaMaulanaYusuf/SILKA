@@ -9,14 +9,44 @@
     accounts: {{ Js::from($accounts) }},
     transactions: {{ Js::from($transactions) }},
 
+    init() {
+        // Load selectedAccount dari localStorage dengan error handling
+        try {
+            const saved = localStorage.getItem('selectedAccount');
+            if (saved) {
+                this.selectedAccount = saved;
+                this.loadTransactions();
+            }
+        } catch (e) {
+            console.error('Error loading from localStorage:', e);
+        }
+    },
+
     loadTransactions() {
         if (!this.selectedAccount) {
             this.transactions = [];
+            try {
+                localStorage.removeItem('selectedAccount');
+            } catch (e) {
+                console.error('Error removing from localStorage:', e);
+            }
             return;
         }
         
+        // Simpan ke localStorage dengan error handling
+        try {
+            localStorage.setItem('selectedAccount', this.selectedAccount);
+        } catch (e) {
+            console.error('Error saving to localStorage:', e);
+        }
+        
         fetch(`/bukubesar/transactions?account_id=${this.selectedAccount}`)
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
                 this.transactions = data;
             })
@@ -25,7 +55,7 @@
                 alert('Terjadi kesalahan saat memuat data');
             });
     }
-}" @change="loadTransactions">
+}">
     <div class="flex overflow-hidden">
         <x-side-bar-menu></x-side-bar-menu>
         <div id="main-content" class="relative text-black font-poppins w-full h-full overflow-y-auto">
@@ -38,6 +68,7 @@
                         <p class="text-sm text-gray-600 mt-1">Kelola buku besar perusahaan</p>
                         <div class="flex items-center gap-4 mt-2">
                             <select x-model="selectedAccount" 
+                                @change="loadTransactions()"
                                 class="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
                                 <option value="">Pilih Kode Akun</option>
                                 <template x-for="account in accounts" :key="account.code">
@@ -96,7 +127,12 @@
                         <tbody x-show="transactions.length === 0">
                             <tr>
                                 <td colspan="7" class="py-4 px-4 text-center text-gray-500">
-                                    Tidak ada data transaksi untuk akun yang dipilih
+                                    <template x-if="!selectedAccount">
+                                        <span>Pilih kode akun untuk menampilkan transaksi</span>
+                                    </template>
+                                    <template x-if="selectedAccount">
+                                        <span>Tidak ada data transaksi untuk akun yang dipilih</span>
+                                    </template>
                                 </td>
                             </tr>
                         </tbody>
@@ -104,13 +140,13 @@
                             <tr>
                                 <td colspan="4" class="py-2 px-4 text-right font-medium border-r">Total:</td>
                                 <td class="py-2 px-4 text-right font-medium border-r" 
-                                    x-text="'Rp.' + new Intl.NumberFormat('id-ID').format(transactions.reduce((sum, t) => sum + (Number(t.debit) || 0), 0))">
+                                    x-text="'Rp. ' + new Intl.NumberFormat('id-ID').format(transactions.reduce((sum, t) => sum + (Number(t.debit) || 0), 0))">
                                 </td>
                                 <td class="py-2 px-4 text-right font-medium border-r"
-                                    x-text="'Rp.' + new Intl.NumberFormat('id-ID').format(transactions.reduce((sum, t) => sum + (Number(t.credit) || 0), 0))">
+                                    x-text="'Rp. ' + new Intl.NumberFormat('id-ID').format(transactions.reduce((sum, t) => sum + (Number(t.credit) || 0), 0))">
                                 </td>
                                 <td class="py-2 px-4 text-right font-medium border-r"
-                                    x-text="'Rp.' + new Intl.NumberFormat('id-ID').format(transactions[transactions.length - 1]?.balance || 0)">
+                                    x-text="'Rp. ' + new Intl.NumberFormat('id-ID').format(transactions[transactions.length - 1]?.balance || 0)">
                                 </td>
                             </tr>
                         </tfoot>

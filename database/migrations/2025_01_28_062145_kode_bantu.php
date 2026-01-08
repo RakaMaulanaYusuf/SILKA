@@ -9,15 +9,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('kode_bantu', function (Blueprint $table) {
-            $table->char('kodebantu_id', 6)->primary();
-            $table->string('kode_bantu', 10);
+            $table->char('kodebantu_id', 17)->primary();
+            $table->string('kode_bantu', 20);
             $table->string('nama_bantu', 50);
             $table->enum('status', ['PIUTANG', 'HUTANG'])->default('PIUTANG');
             $table->decimal('balance', 15, 2)->default(0);
 
-            $table->char('company_id', 6);
+            $table->char('company_id', 8);
             $table->foreign('company_id')->references('company_id')->on('company')->onDelete('cascade');
-            $table->char('period_id', 6);
+            $table->char('period_id', 12);
             $table->foreign('period_id')->references('period_id')->on('company_period')->onDelete('cascade');
             
             $table->index('kode_bantu');

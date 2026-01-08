@@ -8,11 +8,32 @@ use App\Traits\AutoIdGenerator;
 
 class Pendapatan extends Model
 {
+    use AutoIdGenerator;
     protected $table = 'pendapatan';
 
-    protected $primaryKey = 'pendapatan_id'; 
+    protected $primaryKey = 'pendapatan_id';
     public $incrementing = false;
     protected $keyType = 'string';
+
+    public $autoIdField = 'pendapatan_id';
+    protected $autoIdIncrementLength = 5; // 5 digit terakhir
+    public function getAutoIdPrefix()
+    {
+        $period = $this->period;
+
+        $year  = substr($period->period_year, -2);
+
+        $monthIndex = array_search($period->period_month, [
+            'Januari','Februari','Maret','April','Mei','Juni',
+            'Juli','Agustus','September','Oktober','November','Desember'
+        ]) + 1;
+
+        $month = str_pad($monthIndex, 2, '0', STR_PAD_LEFT);
+
+        $companyNumber = substr($period->company_id, 3);
+
+        return 'PDT' . $year . $month . $companyNumber;
+    }
     
     protected $fillable = [
         'company_id',
@@ -46,7 +67,4 @@ class Pendapatan extends Model
         // $type diabaikan karena ini adalah Model spesifik
         return 'pendapatan_id';
     }
-    use AutoIdGenerator;
-    public $autoIdField = 'pendapatan_id';
-    public $autoIdPrefix = 'PDT';
 }

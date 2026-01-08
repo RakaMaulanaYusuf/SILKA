@@ -12,11 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('company_period', function (Blueprint $table) {
-            $table->char('period_id', 6)->primary();
+            $table->char('period_id', 12)->primary();
             $table->enum('period_month', ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni','Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']);
             $table->year('period_year');
 
-            $table->char('company_id', 6);
+            $table->char('company_id', 8);
             $table->foreign('company_id')->references('company_id')->on('company')->onDelete('cascade');
             $table->unique(['company_id', 'period_month', 'period_year']);
             $table->timestamps();

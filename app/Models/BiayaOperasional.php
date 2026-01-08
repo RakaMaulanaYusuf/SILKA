@@ -8,12 +8,32 @@ use App\Traits\AutoIdGenerator;
 
 class BiayaOperasional extends Model
 {
+    use AutoIdGenerator;
     protected $table = 'biaya_operasional';
 
-    protected $primaryKey = 'biayaoperasional_id'; 
+    protected $primaryKey = 'biayaoperasional_id';
     public $incrementing = false;
     protected $keyType = 'string';
-    
+
+    public $autoIdField = 'biayaoperasional_id';
+    protected $autoIdIncrementLength = 5; // 5 digit terakhir
+    public function getAutoIdPrefix()
+    {
+        $period = $this->period;
+
+        $year  = substr($period->period_year, -2);
+
+        $monthIndex = array_search($period->period_month, [
+            'Januari','Februari','Maret','April','Mei','Juni',
+            'Juli','Agustus','September','Oktober','November','Desember'
+        ]) + 1;
+
+        $month = str_pad($monthIndex, 2, '0', STR_PAD_LEFT);
+
+        $companyNumber = substr($period->company_id, 3);
+
+        return 'BOP' . $year . $month . $companyNumber;
+    }
     protected $fillable = [
         'company_id',
         'period_id',
@@ -54,8 +74,4 @@ class BiayaOperasional extends Model
         // $type diabaikan karena ini adalah Model spesifik
         return 'biayaoperasional_id';
     }
-
-    use AutoIdGenerator;
-    public $autoIdField = 'biayaoperasional_id';
-    public $autoIdPrefix = 'BIO';
 }

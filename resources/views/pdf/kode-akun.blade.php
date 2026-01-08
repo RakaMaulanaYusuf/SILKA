@@ -29,7 +29,7 @@
             margin-bottom: 5px;
         }
         
-        .date {
+        .period {
             font-size: 10px;
             margin-bottom: 15px;
         }
@@ -97,7 +97,7 @@
     <div class="header">
         <div class="company-name">{{ strtoupper($companyName) }}</div>
         <div class="title">{{ $title }}</div>
-        <div class="date">Per {{ strtoupper($date) }}</div>
+        <div class="period">Periode: {{ $periodName }}</div>
     </div>
 
     {{-- Table --}}
@@ -121,19 +121,19 @@
             {{-- Data Accounts --}}
             @foreach($accounts as $account)
             <tr>
-                <td class="text-center">{{ $account->account_id }}</td>
-                <td>{{ $account->name }}</td>
-                <td class="text-center">{{ $account->report_type }}</td>
+                <td class="text-center">{{ $account['kode_akun'] }}</td>
+                <td>{{ $account['nama_akun'] }}</td>
+                <td class="text-center">{{ $account['pos_laporan'] }}</td>
                 <td class="text-right">
-                    @if($account->balance_type == 'DEBIT' && $account->debit > 0)
-                        {{ number_format($account->debit, 0, ',', '.') }}
+                    @if($account['pos_saldo'] == 'DEBIT' && $account['debit'] > 0)
+                        {{ number_format($account['debit'], 0, ',', '.') }}
                     @else
                         -
                     @endif
                 </td>
                 <td class="text-right">
-                    @if($account->balance_type == 'CREDIT' && $account->credit > 0)
-                        {{ number_format($account->credit, 0, ',', '.') }}
+                    @if($account['pos_saldo'] == 'CREDIT' && $account['credit'] > 0)
+                        {{ number_format($account['credit'], 0, ',', '.') }}
                     @else
                         -
                     @endif
@@ -141,16 +141,7 @@
             </tr>
             @endforeach
 
-            {{-- Empty rows untuk penambahan manual (seperti di gambar) --}}
-            @for($i = 0; $i < 15; $i++)
-            <tr class="empty-row">
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-            </tr>
-            @endfor
+            
 
             {{-- Total Row --}}
             <tr class="total-row">
@@ -164,5 +155,8 @@
             </tr>
         </tbody>
     </table>
+    <div style="margin-top: 50px; text-align: right; font-size: 10px;">
+        <p>Dicetak pada: {{ now()->format('d F Y, H:i') }}</p>
+    </div>
 </body>
 </html>

@@ -7,12 +7,32 @@ use App\Traits\AutoIdGenerator;
 
 class Ekuitas extends Model
 {
+    use AutoIdGenerator;
     protected $table = 'ekuitas';
 
-    protected $primaryKey = 'ekuitas_id'; 
+    protected $primaryKey = 'ekuitas_id';
     public $incrementing = false;
     protected $keyType = 'string';
-    
+
+    public $autoIdField = 'ekuitas_id';
+    protected $autoIdIncrementLength = 5; // 5 digit terakhir
+    public function getAutoIdPrefix()
+    {
+        $period = $this->period;
+
+        $year  = substr($period->period_year, -2);
+
+        $monthIndex = array_search($period->period_month, [
+            'Januari','Februari','Maret','April','Mei','Juni',
+            'Juli','Agustus','September','Oktober','November','Desember'
+        ]) + 1;
+
+        $month = str_pad($monthIndex, 2, '0', STR_PAD_LEFT);
+
+        $companyNumber = substr($period->company_id, 3);
+
+        return 'EKT' . $year . $month . $companyNumber;
+    }
     protected $fillable = [
         'company_id',
         'period_id',
@@ -51,8 +71,4 @@ class Ekuitas extends Model
     {
         return 'ekuitas_id';
     }
-
-    use AutoIdGenerator;
-    public $autoIdField = 'ekuitas_id';
-    public $autoIdPrefix = 'EKT';
 }

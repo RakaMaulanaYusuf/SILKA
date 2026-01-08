@@ -9,18 +9,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('kode_akun', function (Blueprint $table) {
-            $table->char('kodeakun_id', 6)->primary();
-            $table->string('kode_akun', 10);
+            $table->char('kodeakun_id', 17)->primary();
+            $table->string('kode_akun', 20);
             $table->string('nama_akun', 50);
-            $table->string('tabel_bantuan', 10)->nullable();
+            $table->string('tabel_bantuan', 20)->nullable();
             $table->enum('pos_saldo', ['DEBIT', 'CREDIT'])->default('DEBIT');
             $table->enum('pos_laporan', ['NERACA', 'LABARUGI'])->default('NERACA');
             $table->decimal('debit', 15, 2)->default(0)->nullable()->comment('Saldo Awal Debet');
             $table->decimal('credit', 15, 2)->default(0)->nullable()->comment('Saldo Awal Kredit');
 
-            $table->char('company_id', 6);
+            $table->char('company_id', 8);
             $table->foreign('company_id')->references('company_id')->on('company')->onDelete('cascade');
-            $table->char('period_id', 6);
+            $table->char('period_id', 12);
             $table->foreign('period_id')->references('period_id')->on('company_period')->onDelete('cascade');
             
             $table->index('kode_akun');

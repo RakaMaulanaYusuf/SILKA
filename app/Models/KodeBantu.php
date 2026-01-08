@@ -7,10 +7,32 @@ use App\Traits\AutoIdGenerator;
 
 class KodeBantu extends Model
 {
+    use AutoIdGenerator;
     protected $table = 'kode_bantu';
+
     protected $primaryKey = 'kodebantu_id';
     public $incrementing = false;
     protected $keyType = 'string';
+
+    public $autoIdField = 'kodebantu_id';
+    protected $autoIdIncrementLength = 5; // 5 digit terakhir
+    public function getAutoIdPrefix()
+    {
+        $period = $this->period;
+
+        $year  = substr($period->period_year, -2);
+
+        $monthIndex = array_search($period->period_month, [
+            'Januari','Februari','Maret','April','Mei','Juni',
+            'Juli','Agustus','September','Oktober','November','Desember'
+        ]) + 1;
+
+        $month = str_pad($monthIndex, 2, '0', STR_PAD_LEFT);
+
+        $companyNumber = substr($period->company_id, 3);
+
+        return 'BNT' . $year . $month . $companyNumber;
+    }
     
     protected $fillable = [
         'company_id',
@@ -40,8 +62,4 @@ class KodeBantu extends Model
     {
         return $this->hasMany(JurnalUmum::class, 'kode_bantu', 'kode_bantu');
     }
-
-    use AutoIdGenerator;
-    public $autoIdField = 'kodebantu_id';
-    public $autoIdPrefix = 'BTN';
 }

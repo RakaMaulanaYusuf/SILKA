@@ -21,31 +21,46 @@ use Carbon\Carbon;
 class PdfController extends Controller
 {
     /**
-     * 1. PDF Kode Akun
+     * PDF Kode Akun - FIXED
      */
     public function downloadKodeAkunPDF()
     {
         try {
-            // PERBAIKAN: Mengganti active_company_id
-            $company = Company::find(auth()->user()->company_id);
+            $company_id = auth()->user()->company_id;
+            $period_id = auth()->user()->period_id;
+            
+            if (!$company_id || !$period_id) {
+                return back()->with('error', 'Silakan pilih perusahaan dan periode terlebih dahulu.');
+            }
 
-            // PERBAIKAN: Mengganti active_company_id dan account_id
-            // KE: company_id dan kode_akun
-            $accounts = KodeAkun::where('company_id', auth()->user()->company_id)
+            $company = Company::find($company_id);
+            $companyPeriod = CompanyPeriod::find($period_id);
+
+            $accounts = KodeAkun::where('company_id', $company_id)
+                ->where('period_id', $period_id)
                 ->orderBy('kode_akun')
-                ->get();
+                ->get()
+                ->map(fn($account) => [
+                    'kode_akun' => $account->kode_akun,
+                    'nama_akun' => $account->nama_akun, // FIXED: nama_akun bukan nama
+                    'pos_saldo' => $account->pos_saldo ?? 'DEBIT',
+                    'pos_laporan' => $account->pos_laporan ?? 'NERACA',
+                    'debit' => $account->debit ?? 0,
+                    'credit' => $account->credit ?? 0,
+                ]);
 
-            $totalDebit = $accounts->sum('debit');
-            $totalCredit = $accounts->sum('credit');
+            // Hitung total berdasarkan pos_saldo
+            $totalDebit = $accounts->where('pos_saldo', 'DEBIT')->sum('debit');
+            $totalCredit = $accounts->where('pos_saldo', 'CREDIT')->sum('credit');
 
             $data = [
                 'title' => 'DAFTAR KODE AKUN',
-                // PERBAIKAN: Mengganti $company->name ke $company->nama (sesuai migration)
-                'companyName' => $company ? $company->nama : 'Nama Perusahaan Tidak Ditemukan',
+                'companyName' => $company?->nama ?? 'Nama Perusahaan Tidak Ditemukan',
+                'periodName' => $companyPeriod ? $companyPeriod->period_month . ' ' . $companyPeriod->period_year : 'Periode Tidak Ditemukan',
                 'date' => now()->format('d F Y'),
                 'accounts' => $accounts,
                 'totalDebit' => $totalDebit,
-                'totalCredit' => $totalCredit
+                'totalCredit' => $totalCredit,
             ];
 
             $pdf = PDF::loadView('pdf.kode-akun', $data);
@@ -54,34 +69,51 @@ class PdfController extends Controller
             return $pdf->download('Daftar_Kode_Akun_' . date('YmdHis') . '.pdf');
 
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal generate PDF: ' . $e->getMessage());
+            \Log::error('Error generating Kode Akun PDF: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+            return back()->with('error', 'Gagal generate PDF Kode Akun: ' . $e->getMessage());
         }
     }
 
     /**
-     * 2. PDF Kode Bantu
+     * PDF Kode Bantu - FIXED
      */
     public function downloadKodeBantuPDF()
     {
         try {
-            // PERBAIKAN: Mengganti active_company_id
-            $company = Company::find(auth()->user()->company_id);
-            // PERBAIKAN: Mengganti active_company_id dan helper_id
-            // KE: company_id dan kodebantu_id
-            $kodeBantu = KodeBantu::where('company_id', auth()->user()->company_id)
+            $company_id = auth()->user()->company_id;
+            $period_id = auth()->user()->period_id;
+            
+            if (!$company_id || !$period_id) {
+                return back()->with('error', 'Silakan pilih perusahaan dan periode terlebih dahulu.');
+            }
+
+            $company = Company::find($company_id);
+            $companyPeriod = CompanyPeriod::find($period_id);
+
+            $kodeBantu = KodeBantu::where('company_id', $company_id)
+                ->where('period_id', $period_id)
                 ->orderBy('kodebantu_id')
-                ->get();
+                ->get()
+                ->map(fn($k) => [
+                    'kodebantu_id' => $k->kodebantu_id,
+                    'kode_bantu' => $k->kode_bantu, // FIXED: tambahkan ini jika ada
+                    'nama_bantu' => $k->nama_bantu ?? $k->nama, // FIXED: sesuaikan dengan field di tabel
+                    'status' => $k->status ?? '-',
+                    'saldo_awal' => $k->saldo_awal ?? 0,
+                    'balance' => $k->balance ?? 0,
+                ]);
 
             $totalBalance = $kodeBantu->sum('balance');
 
             $data = [
                 'title' => 'DAFTAR KODE BANTU',
-                // PERBAIKAN: Mengganti $company->name ke $company->nama
-                'companyName' => $company ? $company->nama : 'Nama Perusahaan Tidak Ditemukan',
+                'companyName' => $company?->nama ?? 'Nama Perusahaan Tidak Ditemukan',
+                'periodName' => $companyPeriod ? $companyPeriod->period_month . ' ' . $companyPeriod->period_year : 'Periode Tidak Ditemukan',
                 'date' => now()->format('d F Y'),
                 'kodeBantu' => $kodeBantu,
                 'totalBalance' => $totalBalance,
-                'totalRecords' => $kodeBantu->count()
+                'totalRecords' => $kodeBantu->count(),
             ];
 
             $pdf = PDF::loadView('pdf.kode-bantu', $data);
@@ -90,7 +122,9 @@ class PdfController extends Controller
             return $pdf->download('Daftar_Kode_Bantu_' . date('YmdHis') . '.pdf');
 
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal generate PDF: ' . $e->getMessage());
+            \Log::error('Error generating Kode Bantu PDF: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+            return back()->with('error', 'Gagal generate PDF Kode Bantu: ' . $e->getMessage());
         }
     }
 
@@ -100,33 +134,27 @@ class PdfController extends Controller
     public function downloadJurnalUmumPDF(Request $request)
     {
         try {
-            // PERBAIKAN: Mengganti active_company_id dan company_period_id
-            // KE: company_id dan period_id
             $company_id = auth()->user()->company_id;
             $period_id = auth()->user()->period_id;
 
             $company = Company::find($company_id);
             $companyPeriod = CompanyPeriod::find($period_id);
 
+            // Arrow function version
             $journals = JurnalUmum::with(['account', 'helper'])
                 ->where('company_id', $company_id)
-                // PERBAIKAN: Mengganti company_period_id
                 ->where('period_id', $period_id)
-                // PERBAIKAN: Mengganti date dan transaction_proof
                 ->orderBy('tanggal')
                 ->orderBy('bukti_transaksi')
                 ->get()
-                // MENGGUNAKAN ARROW FUNCTION
                 ->map(fn($journal) => [
-                    // PERBAIKAN: Mengganti date, transaction_proof, description, account_id, account_name, helper_name
-                    'date' => $journal->tanggal->format('Y-m-d'),
-                    'transaction_proof' => $journal->bukti_transaksi,
-                    'description' => $journal->keterangan,
-                    'account_id' => $journal->kode_akun, // Menggunakan kode_akun
-                    'account_name' => $journal->account->nama_akun, // Menggunakan nama_akun
-                    'helper_name' => $journal->helper?->nama_bantu, // Menggunakan nama_bantu
-                    'debit' => $journal->debit,
-                    'credit' => $journal->credit,
+                    'tanggal' => Carbon::parse($journal->tanggal)->format('Y-m-d'),
+                    'bukti_transaksi' => $journal->bukti_transaksi,
+                    'deskripsi' => $journal->keterangan,
+                    'kode_akun' => $journal->kode_akun,
+                    'kode_bantu' => $journal->kode_bantu ?? '-',
+                    'debit' => $journal->debit ?? 0,
+                    'credit' => $journal->credit ?? 0,
                 ]);
 
             $totalDebit = $journals->sum('debit');
@@ -134,9 +162,7 @@ class PdfController extends Controller
 
             $data = [
                 'title' => 'LAPORAN JURNAL UMUM',
-                // PERBAIKAN: Mengganti $company->name ke $company->nama
-                'companyName' => $company ? $company->nama : 'Nama Perusahaan Tidak Ditemukan',
-                // PERBAIKAN: Mengganti $companyPeriod->name
+                'companyName' => $company?->nama ?? 'Nama Perusahaan Tidak Ditemukan',
                 'periodName' => $companyPeriod ? $companyPeriod->period_month . ' ' . $companyPeriod->period_year : 'Periode Tidak Ditemukan',
                 'date' => now()->format('d F Y'),
                 'journals' => $journals,
@@ -146,11 +172,13 @@ class PdfController extends Controller
             ];
 
             $pdf = PDF::loadView('pdf.jurnal-umum', $data);
-            $pdf->setPaper('A4', 'landscape'); // Jurnal umum biasanya lebih baik dalam landscape
+            $pdf->setPaper('A4', 'landscape');
 
             return $pdf->download('Jurnal_Umum_' . date('YmdHis') . '.pdf');
 
         } catch (\Exception $e) {
+            \Log::error('Error generating Jurnal Umum PDF: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
             return back()->with('error', 'Gagal generate PDF Jurnal Umum: ' . $e->getMessage());
         }
     }
@@ -330,7 +358,6 @@ class PdfController extends Controller
     public function downloadLabaRugiPDF(Request $request)
     {
         try {
-            // PERBAIKAN: Mengganti active_company_id dan company_period_id
             $company_id = auth()->user()->company_id;
             $period_id = auth()->user()->period_id;
 
@@ -341,73 +368,67 @@ class PdfController extends Controller
             $company = Company::find($company_id);
             $companyPeriod = CompanyPeriod::find($period_id);
             
-            // Pastikan ini adalah fully qualified namespace
             $labaRugiController = new \App\Http\Controllers\LabaRugiController(); 
 
+            // PERBAIKAN: Hitung balance dengan benar
             $pendapatan = Pendapatan::where('company_id', $company_id)
-                // PERBAIKAN: Mengganti company_period_id
                 ->where('period_id', $period_id)
                 ->with('account')
                 ->get()
-                // MENGGUNAKAN ARROW FUNCTION
-                ->map(fn($item) => [
-                    // PERBAIKAN: Mengganti account_id, name, amount
-                    // KE: kode_akun, nama_akun, jumlah (balance)
-                    $balance = $labaRugiController->getBukuBesarBalance($item->kode_akun),
-                    'kode_akun' => $item->kode_akun,
-                    'name' => $item->nama_akun,
-                    'amount' => $balance, 
-                ]);
+                ->map(function($item) use ($labaRugiController) {
+                    $balance = $labaRugiController->getBukuBesarBalance($item->kode_akun);
+                    return [
+                        'kode_akun' => $item->kode_akun,
+                        'nama_akun' => $item->account->nama_akun ?? 'N/A',
+                        'jumlah' => $balance,
+                    ];
+                });
             
             $hpp = HPP::where('company_id', $company_id)
-                // PERBAIKAN: Mengganti company_period_id
                 ->where('period_id', $period_id)
                 ->with('account')
                 ->get()
-                // MENGGUNAKAN ARROW FUNCTION
-                ->map(fn($item) => [
-                    // PERBAIKAN: Mengganti account_id, name, amount
-                    $balance = $labaRugiController->getBukuBesarBalance($item->kode_akun),
-                    'kode_akun' => $item->kode_akun,
-                    'name' => $item->nama_akun,
-                    'amount' => $balance,
-                ]);
+                ->map(function($item) use ($labaRugiController) {
+                    $balance = $labaRugiController->getBukuBesarBalance($item->kode_akun);
+                    return [
+                        'kode_akun' => $item->kode_akun,
+                        'nama_akun' => $item->account->nama_akun ?? 'N/A',
+                        'jumlah' => $balance,
+                    ];
+                });
 
-            $biayaoperasional = BiayaOperasional::where('company_id', $company_id)
-                // PERBAIKAN: Mengganti company_period_id
+            $biaya = BiayaOperasional::where('company_id', $company_id)
                 ->where('period_id', $period_id)
                 ->with('account')
                 ->get()
-                // MENGGUNAKAN ARROW FUNCTION
-                ->map(fn($item) => [
-                    // PERBAIKAN: Mengganti account_id, name, amount
-                    $balance = $labaRugiController->getBukuBesarBalance($item->kode_akun),
-                    'kode_akun' => $item->kode_akun,
-                    'name' => $item->nama_akun,
-                    'amount' => $balance,
-                ]);
+                ->map(function($item) use ($labaRugiController) {
+                    $balance = $labaRugiController->getBukuBesarBalance($item->kode_akun);
+                    return [
+                        'kode_akun' => $item->kode_akun,
+                        'nama_akun' => $item->account->nama_akun ?? 'N/A',
+                        'jumlah' => $balance,
+                    ];
+                });
 
-            $totalPendapatan = $pendapatan->sum('amount');
-            $totalHPP = $hpp->sum('amount');
-            $totalBiayaOperasional = $biayaoperasional->sum('amount');
+            $totalPendapatan = $pendapatan->sum('jumlah');
+            $totalHPP = $hpp->sum('jumlah');
+            $totalBiayaOperasional = $biaya->sum('jumlah');
 
-            $labaKotor = $totalPendapatan - $totalHPP;
-            $labaBersih = $labaKotor - $totalBiayaOperasional;
+            // $labaKotor = $totalPendapatan - $totalHPP;
+            $labaBersih = $totalPendapatan - ($totalBiayaOperasional + $totalHPP);
 
             $data = [
                 'title' => 'LAPORAN LABA RUGI',
-                // PERBAIKAN: Mengganti $company->name ke $company->nama
                 'companyName' => $company ? $company->nama : 'Nama Perusahaan Tidak Ditemukan',
-                // PERBAIKAN: Mengganti $companyPeriod->name
                 'periodName' => $companyPeriod ? $companyPeriod->period_month . ' ' . $companyPeriod->period_year : 'Periode Tidak Ditemukan',
-                'date' => now()->format('d F Y'), // Tanggal cetak laporan
+                'date' => now()->format('d F Y'),
                 'pendapatan' => $pendapatan,
                 'hpp' => $hpp,
-                'biayaoperasional' => $biayaoperasional,
+                'biaya' => $biaya, // PERBAIKAN: Ganti biayaoperasional jadi biaya
                 'totalPendapatan' => $totalPendapatan,
                 'totalHPP' => $totalHPP,
                 'totalBiayaOperasional' => $totalBiayaOperasional,
-                'labaKotor' => $labaKotor,
+                // 'labaKotor' => $labaKotor,
                 'labaBersih' => $labaBersih,
             ];
 
@@ -428,7 +449,6 @@ class PdfController extends Controller
     public function downloadNeracaPDF(Request $request)
     {
         try {
-            // PERBAIKAN: Mengganti active_company_id dan company_period_id
             $company_id = auth()->user()->company_id;
             $period_id = auth()->user()->period_id;
 
@@ -439,97 +459,98 @@ class PdfController extends Controller
             $company = Company::find($company_id);
             $companyPeriod = CompanyPeriod::find($period_id);
             
-            // Pastikan fully qualified namespace di sini:
             $neracaController = new \App\Http\Controllers\NeracaController(); 
             $labaRugiController = new \App\Http\Controllers\LabaRugiController(); 
 
             $aktivaLancar = AktivaLancar::where('company_id', $company_id)
-                // PERBAIKAN: Mengganti company_period_id
                 ->where('period_id', $period_id)
                 ->with('account')
                 ->get()
-                // MENGGUNAKAN ARROW FUNCTION
-                ->map(fn($item) => [
-                    // PERBAIKAN: Mengganti account_id, name, amount
-                    $balance = $neracaController->getBukuBesarBalance($item->kode_akun),
-                    'kode_akun' => $item->kode_akun,
-                    'name' => $item->nama_akun,
-                    'amount' => $balance,
-                ]);
+                ->map(function($item) use ($neracaController) {
+                    $balance = $neracaController->getBukuBesarBalance($item->kode_akun);
+                    return [
+                        'kode_akun' => $item->kode_akun,
+                        'nama_akun' => $item->account->nama_akun ?? 'N/A',
+                        'jumlah' => $balance,
+                    ];
+                });
 
             $aktivaTetap = AktivaTetap::where('company_id', $company_id)
-                // PERBAIKAN: Mengganti company_period_id
                 ->where('period_id', $period_id)
                 ->with('account')
                 ->get()
-                // MENGGUNAKAN ARROW FUNCTION
-                ->map(fn($item) => [
-                    // PERBAIKAN: Mengganti account_id, name, amount
-                    $balance = $neracaController->getBukuBesarBalance($item->kode_akun),
-                    'kode_akun' => $item->kode_akun,
-                    'name' => $item->nama_akun,
-                    'amount' => $balance,
-                ]);
+                ->map(function($item) use ($neracaController) {
+                    $balance = $neracaController->getBukuBesarBalance($item->kode_akun);
+                    return [
+                        'kode_akun' => $item->kode_akun,
+                        'nama_akun' => $item->account->nama_akun ?? 'N/A',
+                        'jumlah' => $balance,
+                    ];
+                });
             
             $kewajiban = Kewajiban::where('company_id', $company_id)
-                // PERBAIKAN: Mengganti company_period_id
                 ->where('period_id', $period_id)
                 ->with('account')
                 ->get()
-                // MENGGUNAKAN ARROW FUNCTION
-                ->map(fn($item) => [
-                    // PERBAIKAN: Mengganti account_id, name, amount
-                    $balance = $neracaController->getBukuBesarBalance($item->kode_akun),
-                    'kode_akun' => $item->kode_akun,
-                    'name' => $item->nama_akun,
-                    'amount' => $balance,
-                ]);
+                ->map(function($item) use ($neracaController) {
+                    $balance = $neracaController->getBukuBesarBalance($item->kode_akun);
+                    return [
+                        'kode_akun' => $item->kode_akun,
+                        'nama_akun' => $item->account->nama_akun ?? 'N/A',
+                        'jumlah' => $balance,
+                    ];
+                });
 
             $ekuitas = Ekuitas::where('company_id', $company_id)
-                // PERBAIKAN: Mengganti company_period_id
                 ->where('period_id', $period_id)
                 ->with('account')
                 ->get()
-                // MENGGUNAKAN ARROW FUNCTION
-                ->map(fn($item) => [
-                    // PERBAIKAN: Mengganti account_id, name, amount
-                    $balance = $neracaController->getBukuBesarBalance($item->kode_akun),
-                    'kode_akun' => $item->kode_akun,
-                    'name' => $item->nama_akun,
-                    'amount' => $balance,
-                ]);
+                ->map(function($item) use ($neracaController) {
+                    $balance = $neracaController->getBukuBesarBalance($item->kode_akun);
+                    return [
+                        'kode_akun' => $item->kode_akun,
+                        'nama_akun' => $item->account->nama_akun ?? 'N/A',
+                        'jumlah' => $balance,
+                    ];
+                });
 
-            $totalAktivaLancar = $aktivaLancar->sum('amount');
-            $totalAktivaTetap = $aktivaTetap->sum('amount');
+            $totalAktivaLancar = $aktivaLancar->sum('jumlah');
+            $totalAktivaTetap = $aktivaTetap->sum('jumlah');
             $totalAktiva = $totalAktivaLancar + $totalAktivaTetap;
 
-            $totalKewajiban = $kewajiban->sum('amount');
-            $totalEkuitas = $ekuitas->sum('amount');
+            $totalKewajiban = $kewajiban->sum('jumlah');
+            $totalEkuitas = $ekuitas->sum('jumlah');
             $totalKewajibanDanEkuitas = $totalKewajiban + $totalEkuitas;
             
-            // Calculate Retained Earnings from the Laba Rugi report
-            // PERBAIKAN: Mengganti account_id, company_period_id
-            $pendapatan_lr = Pendapatan::where('company_id', $company_id)->where('period_id', $period_id)->get()
-                ->sum(fn($item) => $labaRugiController->getBukuBesarBalance($item->kode_akun));
+            // Calculate laba bersih
+            $pendapatan_lr = Pendapatan::where('company_id', $company_id)
+                ->where('period_id', $period_id)
+                ->get()
+                ->sum(function($item) use ($labaRugiController) {
+                    return $labaRugiController->getBukuBesarBalance($item->kode_akun);
+                });
             
-            // PERBAIKAN: Mengganti account_id, company_period_id
-            $hpp_lr = HPP::where('company_id', $company_id)->where('period_id', $period_id)->get()
-                ->sum(fn($item) => $labaRugiController->getBukuBesarBalance($item->kode_akun));
+            $hpp_lr = HPP::where('company_id', $company_id)
+                ->where('period_id', $period_id)
+                ->get()
+                ->sum(function($item) use ($labaRugiController) {
+                    return $labaRugiController->getBukuBesarBalance($item->kode_akun);
+                });
             
-            // PERBAIKAN: Mengganti account_id, company_period_id
-            $biaya_lr = BiayaOperasional::where('company_id', $company_id)->where('period_id', $period_id)->get()
-                ->sum(fn($item) => $labaRugiController->getBukuBesarBalance($item->kode_akun));
+            $biaya_lr = BiayaOperasional::where('company_id', $company_id)
+                ->where('period_id', $period_id)
+                ->get()
+                ->sum(function($item) use ($labaRugiController) {
+                    return $labaRugiController->getBukuBesarBalance($item->kode_akun);
+                });
             
             $labaBersihTahunBerjalan = $pendapatan_lr - $hpp_lr - $biaya_lr;
 
-
             $data = [
                 'title' => 'LAPORAN NERACA',
-                // PERBAIKAN: Mengganti $company->name ke $company->nama
                 'companyName' => $company ? $company->nama : 'Nama Perusahaan Tidak Ditemukan',
-                // PERBAIKAN: Mengganti $companyPeriod->name
                 'periodName' => $companyPeriod ? $companyPeriod->period_month . ' ' . $companyPeriod->period_year : 'Periode Tidak Ditemukan',
-                'date' => now()->format('d F Y'), // Tanggal cetak laporan
+                'date' => now()->format('d F Y'),
                 'aktivaLancar' => $aktivaLancar,
                 'aktivaTetap' => $aktivaTetap,
                 'totalAktivaLancar' => $totalAktivaLancar,

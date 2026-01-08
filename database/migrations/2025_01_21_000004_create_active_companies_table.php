@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('active_companies', function (Blueprint $table) {
             $table->id('aktifcompanyid');
-            $table->char('user_id', 6);
+            $table->char('user_id', 8);
             $table->foreign('user_id')->references('user_id')->on('users')->onDelete('cascade');
-            $table->char('company_id', 6);
+            $table->char('company_id', 8);
             $table->foreign('company_id')->references('company_id')->on('company')->onDelete('cascade');
             $table->timestamps();
         });

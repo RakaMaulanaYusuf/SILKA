@@ -102,10 +102,7 @@
     <div class="header">
         <div class="company-name">{{ strtoupper($companyName) }}</div>
         <div class="title">{{ $title }}</div>
-        <div class="date">Per {{ strtoupper($date) }}</div>
-        @if(isset($periodName))
-            <div class="date">Periode: {{ $periodName }}</div>
-        @endif
+        <div class="period">Periode: {{ $periodName }}</div>
     </div>
 
     {{-- Table --}}
@@ -125,11 +122,11 @@
             {{-- Data Jurnal --}}
             @foreach($journals as $jurnal)
             <tr>
-                <td class="text-center">{{ $jurnal['date'] }}</td>
-                <td class="text-center">{{ $jurnal['transaction_proof'] }}</td>
-                <td>{{ $jurnal['description'] }}</td>
-                <td class="text-center">{{ $jurnal['account_id'] }}</td> {{-- Hanya Kode Akun --}}
-                <td class="text-center">{{ $jurnal['helper_id'] ?? '-' }}</td> {{-- Hanya Kode Bantu --}}
+                <td class="text-center">{{ $jurnal['tanggal'] }}</td>
+                <td class="text-center">{{ $jurnal['bukti_transaksi'] }}</td>
+                <td>{{ $jurnal['deskripsi'] }}</td>
+                <td class="text-center">{{ $jurnal['kode_akun'] }}</td> {{-- Hanya Kode Akun --}}
+                <td class="text-center">{{ $jurnal['kode_bantu'] ?? '-' }}</td> {{-- Hanya Kode Bantu --}}
                 <td class="text-right">
                     @if(isset($jurnal['debit']) && $jurnal['debit'] > 0)
                         {{ number_format($jurnal['debit'], 0, ',', '.') }}
@@ -165,5 +162,8 @@
             </tr>
         </tbody>
     </table>
+    <div style="margin-top: 50px; text-align: right; font-size: 10px;">
+        <p>Dicetak pada: {{ now()->format('d F Y, H:i') }}</p>
+    </div>
 </body>
 </html>

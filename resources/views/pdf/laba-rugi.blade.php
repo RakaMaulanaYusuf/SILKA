@@ -155,8 +155,7 @@
     <div class="header">
         <div class="company-name">{{ strtoupper($companyName) }}</div>
         <div class="title">{{ $title }}</div>
-        <div class="period">Untuk Periode yang Berakhir {{ $periodName }}</div> {{-- Menggunakan $periodName --}}
-        <div class="date-print">Tanggal Cetak: {{ strtoupper($date) }}</div>
+        <div class="period">Periode: {{ $periodName }}</div>
     </div>
 
     {{-- PENDAPATAN --}}
@@ -164,10 +163,10 @@
         <div class="section-title">PENDAPATAN:</div>
         <div class="report-table">
             @foreach($pendapatan as $account) {{-- Menggunakan $pendapatan --}}
-            @if($account['amount'] > 0) {{-- Mengakses dengan array key 'amount' --}}
+            @if($account['jumlah'] >= 0) {{-- Mengakses dengan array key 'amount' --}}
             <div class="report-row">
-                <div class="report-cell-label">{{ $account['name'] }}</div>
-                <div class="report-cell-amount">Rp {{ number_format($account['amount'], 0, ',', '.') }}</div>
+                <div class="report-cell-label">{{ $account['nama_akun'] }}</div>
+                <div class="report-cell-amount">Rp {{ number_format($account['jumlah'], 0, ',', '.') }}</div>
             </div>
             @endif
             @endforeach
@@ -183,10 +182,10 @@
         <div class="section-title">HARGA POKOK PENJUALAN:</div>
         <div class="report-table">
             @foreach($hpp as $account) {{-- Menggunakan $hpp --}}
-            @if($account['amount'] > 0) {{-- Mengakses dengan array key 'amount' --}}
+            @if($account['jumlah'] >= 0) {{-- Mengakses dengan array key 'amount' --}}
             <div class="report-row">
-                <div class="report-cell-label">{{ $account['name'] }}</div>
-                <div class="report-cell-amount">Rp {{ number_format($account['amount'], 0, ',', '.') }}</div>
+                <div class="report-cell-label">{{ $account['nama_akun'] }}</div>
+                <div class="report-cell-amount">Rp {{ number_format($account['jumlah'], 0, ',', '.') }}</div>
             </div>
             @endif
             @endforeach
@@ -198,22 +197,22 @@
     </div>
 
     {{-- LABA KOTOR --}}
-    <div class="main-section">
-        <div class="total"> {{-- Menggunakan class total untuk laba kotor --}}
+    {{-- <div class="main-section">
+        <div class="total"> 
             <div class="label">LABA KOTOR</div>
             <div class="amount">Rp {{ number_format($labaKotor, 0, ',', '.') }}</div>
         </div>
-    </div>
+    </div> --}}
 
     {{-- BEBAN OPERASIONAL --}}
     <div class="main-section">
         <div class="section-title">BEBAN OPERASIONAL:</div>
         <div class="report-table">
             @foreach($biaya as $account) {{-- Menggunakan $biaya --}}
-            @if($account['amount'] > 0) {{-- Mengakses dengan array key 'amount' --}}
+            @if($account['jumlah'] >= 0) {{-- Mengakses dengan array key 'amount' --}}
             <div class="report-row">
-                <div class="report-cell-label">{{ $account['name'] }}</div>
-                <div class="report-cell-amount">Rp {{ number_format($account['amount'], 0, ',', '.') }}</div>
+                <div class="report-cell-label">{{ $account['nama_akun'] }}</div>
+                <div class="report-cell-amount">Rp {{ number_format($account['jumlah'], 0, ',', '.') }}</div>
             </div>
             @endif
             @endforeach

@@ -38,6 +38,10 @@ Route::middleware('auth')->group(function () {
         // Admin Dashboard
         Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
 
+        Route::get('/bantuanadmin', function () {
+            return view('admin/bantuanadmin');  
+        })->name('bantuanadmin');
+
         // Manajemen Akun
         Route::get('/admin/manage-accounts', [AdminController::class, 'manageAccounts'])->name('admin.manage-accounts');
         Route::post('/admin/users', [AdminController::class, 'createUser'])->name('admin.users.create'); // Untuk membuat user baru
@@ -69,7 +73,7 @@ Route::middleware('auth')->group(function () {
         Route::put('/companies/{company}', [CompanyController::class, 'update'])->name('companies.update'); // New route for update
         Route::post('/periods', [CompanyController::class, 'storePeriod'])->name('periods.store');
 
-        Route::get('/bantuan', function () {
+        Route::get('/bantuanstaff', function () {
             return view('staff/bantuanstaff');  
         })->name('bantuanstaff');
 

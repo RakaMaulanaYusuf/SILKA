@@ -29,7 +29,7 @@
             margin-bottom: 5px;
         }
         
-        .date {
+        .period {
             font-size: 12px;
             margin-bottom: 15px;
         }
@@ -86,7 +86,7 @@
     <div class="header">
         <div class="company-name">{{ strtoupper($companyName) }}</div>
         <div class="title">{{ $title }}</div>
-        <div class="date">Per {{ $date }}</div>
+        <div class="period">Periode: {{ $periodName }}</div>
     </div>
 
     {{-- Table --}}
@@ -105,10 +105,10 @@
                 @foreach($kodeBantu as $index => $item)
                 <tr>
                     <td class="text-center">{{ $index + 1 }}</td>
-                    <td class="text-center">{{ $item->helper_id }}</td>
-                    <td>{{ $item->name }}</td>
-                    <td class="text-center">{{ $item->status }}</td>
-                    <td class="text-right">{{ number_format($item->balance ?? 0, 0, ',', '.') }}</td>
+                    <td class="text-center">{{ $item['kode_bantu'] ?? $item['kodebantu_id'] }}</td>
+                    <td>{{ $item['nama_bantu'] }}</td>
+                    <td class="text-center">{{ $item['status'] }}</td>
+                    <td class="text-right">{{ number_format($item['balance'] ?? 0, 0, ',', '.') }}</td>
                 </tr>
                 @endforeach
                 

@@ -7,15 +7,29 @@ use App\Traits\AutoIdGenerator;
 
 class CompanyPeriod extends Model
 {
-    //Generate costum id
     use AutoIdGenerator;
+    protected $table = 'company_period';
     protected $primaryKey = 'period_id';
     public $incrementing = false;
     protected $keyType = 'string';
-    protected $table = 'company_period';
-    
+
     public $autoIdField = 'period_id';
-    public $autoIdPrefix = 'PRD';
+    protected $autoIdIncrementLength = 0; // Tidak pakai increment
+    public function getAutoIdPrefix()
+    {
+        $year = substr($this->period_year, -2);
+
+        $monthIndex = array_search($this->period_month, [
+            'Januari','Februari','Maret','April','Mei','Juni',
+            'Juli','Agustus','September','Oktober','November','Desember'
+        ]) + 1;
+
+        $month = str_pad($monthIndex, 2, '0', STR_PAD_LEFT);
+
+        $companyNumber = substr($this->company_id, 3);
+
+        return 'PRD' . $year . $month . $companyNumber;
+    }
     
     protected $fillable = [
         'company_id',

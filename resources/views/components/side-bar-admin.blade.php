@@ -191,7 +191,7 @@
                                 <span class="ml-3 text-sm font-medium text-gray-700 group-hover:text-blue-600">Profil Saya</span>
                             </a>
 
-                            <a href="/bantuan" 
+                            <a href="/bantuanadmin" 
                                class="flex items-center px-4 py-3 hover:bg-blue-50 transition-colors duration-200 group">
                                 <div class="p-2 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors">
                                     <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -222,7 +222,7 @@
                                 <span class="ml-3 text-sm font-medium text-gray-700 group-hover:text-blue-600">Profil Saya</span>
                             </a>
 
-                            <a href="/bantuan" 
+                            <a href="/bantuanadmin" 
                                class="flex items-center px-4 py-3 hover:bg-blue-50 transition-colors duration-200 group">
                                 <div class="p-2 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors">
                                     <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

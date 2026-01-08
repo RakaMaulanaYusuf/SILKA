@@ -7,16 +7,17 @@ use App\Traits\AutoIdGenerator;
 
 class Company extends Model
 {
-    //Generate costum id
     use AutoIdGenerator;
+
     protected $primaryKey = 'company_id';
     public $incrementing = false;
     protected $keyType = 'string';
+
     protected $table = 'company';
 
-    
     public $autoIdField = 'company_id';
     public $autoIdPrefix = 'CMP';
+    protected $autoIdIncrementLength = 5;
     protected $fillable = [
         'company_id',
         'nama',

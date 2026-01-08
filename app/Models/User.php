@@ -9,15 +9,18 @@ use App\Traits\AutoIdGenerator;
 
 class User extends Authenticatable 
 {
-    //Generate costum id
     use AutoIdGenerator;
-    public $autoIdField = 'user_id';
-    public $autoIdPrefix = 'USR';
+    use HasFactory, Notifiable;
+    protected $table = 'users';
+
     protected $primaryKey = 'user_id';
     public $incrementing = false;
     protected $keyType = 'string';
 
-    use HasFactory, Notifiable;
+    public $autoIdField = 'user_id';
+    public $autoIdPrefix = 'USR';
+    protected $autoIdIncrementLength = 5;
+
     protected $fillable = [
         'nama', 'email', 'password', 'role',
         'company_id', 

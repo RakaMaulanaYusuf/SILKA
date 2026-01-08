@@ -10,29 +10,27 @@ class CompanyPeriodSeeder extends Seeder
 {
     public function run(): void
     {
-        $cmp1 = Company::where('email', 'majumundur@gmail.com')->first();
-        $cmp2 = Company::where('email', 'jayaabadi@gmail.com')->first();
-
-        $data = [
-            [
-                'company_id' => $cmp1->company_id,
-                'period_month' => 'Juli',
-                'period_year' => 2025,
-            ],
-            [
-                'company_id' => $cmp2->company_id,
-                'period_month' => 'Januari',
-                'period_year' => 2025,
-            ],
-            [
-                'company_id' => $cmp2->company_id,
-                'period_month' => 'Februari',
-                'period_year' => 2025,
-            ],
+        $companies = [
+            ['email' => 'majumundur@gmail.com', 'period' => [
+                ['month' => 'November', 'year' => 2025],
+                ['month' => 'Desember', 'year' => 2025],
+            ]],
         ];
 
-        foreach ($data as $period) {
-            CompanyPeriod::create($period);
+        foreach ($companies as $companyData) {
+            $company = Company::where('email', $companyData['email'])->first();
+            if (!$company) continue; // safety check
+
+            foreach ($companyData['period'] as $period) {
+                CompanyPeriod::updateOrCreate(
+                    [
+                        'company_id'   => $company->company_id,
+                        'period_month' => $period['month'],
+                        'period_year'  => $period['year'],
+                    ],
+                    [] // data tambahan bisa kosong karena ID otomatis
+                );
+            }
         }
     }
 }

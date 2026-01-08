@@ -178,7 +178,7 @@
     <div class="header">
         <div class="company-name">{{ strtoupper($companyName) }}</div>
         <div class="title">{{ $title }}</div>
-        <div class="period-date">Per {{ $periodName }}</div> {{-- Menggunakan $periodName --}}
+        <div class="period">Periode: {{ $periodName }}</div>
     </div>
 
     {{-- Balance Sheet Content --}}
@@ -191,10 +191,10 @@
             <div class="subsection-title">AKTIVA LANCAR:</div>
             <div>
                 @foreach($aktivaLancar as $account) {{-- Langsung looping $aktivaLancar --}}
-                @if($account['amount'] > 0) {{-- Akses amount --}}
+                @if($account['jumlah'] >= 0) {{-- Akses amount --}}
                 <div class="account-line">
-                    <div class="account-name">{{ $account['name'] }}</div>
-                    <div class="account-amount">{{ number_format($account['amount'], 0, ',', '.') }}</div>
+                    <div class="account-name">{{ $account['nama_akun'] }}</div>
+                    <div class="account-amount">{{ number_format($account['jumlah'], 0, ',', '.') }}</div>
                 </div>
                 @endif
                 @endforeach
@@ -208,10 +208,10 @@
             <div class="subsection-title">AKTIVA TETAP:</div>
             <div>
                 @foreach($aktivaTetap as $account) {{-- Langsung looping $aktivaTetap --}}
-                @if($account['amount'] > 0) {{-- Akses amount --}}
+                @if($account['jumlah'] >= 0) {{-- Akses amount --}}
                 <div class="account-line">
-                    <div class="account-name">{{ $account['name'] }}</div>
-                    <div class="account-amount">{{ number_format($account['amount'], 0, ',', '.') }}</div>
+                    <div class="account-name">{{ $account['nama_akun'] }}</div>
+                    <div class="account-amount">{{ number_format($account['jumlah'], 0, ',', '.') }}</div>
                 </div>
                 @endif
                 @endforeach
@@ -236,10 +236,10 @@
             <div class="subsection-title">KEWAJIBAN:</div>
             <div>
                 @foreach($kewajiban as $account) {{-- Langsung looping $kewajiban --}}
-                @if($account['amount'] > 0) {{-- Akses amount --}}
+                @if($account['jumlah'] >= 0) {{-- Akses amount --}}
                 <div class="account-line">
-                    <div class="account-name">{{ $account['name'] }}</div>
-                    <div class="account-amount">{{ number_format($account['amount'], 0, ',', '.') }}</div>
+                    <div class="account-name">{{ $account['nama_akun'] }}</div>
+                    <div class="account-amount">{{ number_format($account['jumlah'], 0, ',', '.') }}</div>
                 </div>
                 @endif
                 @endforeach
@@ -253,10 +253,10 @@
             <div class="subsection-title">EKUITAS:</div>
             <div>
                 @foreach($ekuitas as $account) {{-- Langsung looping $ekuitas --}}
-                @if($account['amount'] > 0) {{-- Akses amount --}}
+                @if($account['jumlah'] >= 0) {{-- Akses amount --}}
                 <div class="account-line">
-                    <div class="account-name">{{ $account['name'] }}</div>
-                    <div class="account-amount">{{ number_format($account['amount'], 0, ',', '.') }}</div>
+                    <div class="account-name">{{ $account['nama_akun'] }}</div>
+                    <div class="account-amount">{{ number_format($account['jumlah'], 0, ',', '.') }}</div>
                 </div>
                 @endif
                 @endforeach

@@ -137,7 +137,6 @@
         <div class="company-name">{{ strtoupper($companyName) }}</div>
         <div class="title">{{ $title }}</div>
         <div class="period">Periode: {{ $periodName }}</div> {{-- Tampilkan Periode --}}
-        <div class="date">Tanggal Cetak: {{ strtoupper($date) }}</div>
     </div>
 
     {{-- Loop melalui setiap data pembantu Buku Besar --}}
@@ -208,24 +207,39 @@
                     @endforeach
 
                     {{-- Menambahkan baris kosong setelah transaksi jika diperlukan --}}
-                    {{-- @php
+                    @php
                         $rowsCount = 1 + count($helperData['transactions']);
                         $minRowsForDisplay = 15; // Contoh minimal baris untuk tampilan
                     @endphp
-                    @for($i = $rowsCount; $i < $minRowsForDisplay; $i++)
-                        <tr>
-                            <td>&nbsp;</td>
-                            <td>&nbsp;</td>
-                            <td>&nbsp;</td>
-                            <td>&nbsp;</td>
-                            <td>&nbsp;</td>
-                            <td>&nbsp;</td>
-                            <td>&nbsp;</td>
-                        </tr>
-                    @endfor --}}
                 </tbody>
+                <tfoot style="font-weight: bold; background-color: #f8f9fa;">
+                    @php
+                        // Menghitung total debet dan kredit dari koleksi transaksi pembantu
+                        $totalDebet = collect($helperData['transactions'])->sum('debit');
+                        $totalKredit = collect($helperData['transactions'])->sum('credit');
+                        
+                        // Mengambil saldo akhir dari transaksi terakhir
+                        $lastTransaction = collect($helperData['transactions'])->last();
+                        $saldoAkhir = $lastTransaction ? $lastTransaction['balance'] : ($helperData['initial_balance'] ?? 0);
+                    @endphp
+                    <tr>
+                        <td colspan="4" class="text-right">Total:</td>
+                        <td class="text-right">
+                            {{ $totalDebet > 0 ? 'Rp.' . number_format($totalDebet, 0, ',', '.') : 'Rp.0' }}
+                        </td>
+                        <td class="text-right">
+                            {{ $totalKredit > 0 ? 'Rp.' . number_format($totalKredit, 0, ',', '.') : 'Rp.0' }}
+                        </td>
+                        <td class="text-right" style="background-color: #eee;">
+                            Rp.{{ number_format($saldoAkhir, 0, ',', '.') }}
+                        </td>
+                    </tr>
+                </tfoot>
             </table>
         </div>
     @endforeach
+    <div style="margin-top: 50px; text-align: right; font-size: 10px;">
+        <p>Dicetak pada: {{ now()->format('d F Y, H:i') }}</p>
+    </div>
 </body>
 </html>

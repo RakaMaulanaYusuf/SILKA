@@ -4,7 +4,7 @@
 
 @section('page')
 <div class="min-h-screen flex items-center justify-center px-4" style="background-image: url('{{ asset('images/Background.jpg') }}'); background-size: cover; background-position: center;">
-    <div class="max-w-lg w-full bg-gradient-to-br from-blue-400 to-purple-600 rounded-2xl shadow-xl p-8 space-y-6">
+    <div class="max-w-lg w-full bg-gradient-to-br from-blue-500 to-purple-700 rounded-2xl shadow-xl p-8 space-y-6">
         <!-- Logo dan Header -->
         <div class="flex flex-col items-center justify-center space-y-2">
             <img src="{{ asset('images/logosilka22.png') }}" alt="SIAKU Logo" class="w-80 h-64">
@@ -72,7 +72,7 @@
                 </div>
             </div>
 
-            <div class="flex items-center">
+            {{-- <div class="flex items-center">
                 <input 
                     type="checkbox" 
                     id="remember" 
@@ -82,7 +82,7 @@
                 <label for="remember" class="ml-2 block text-sm text-white font-poppins font-medium">
                     Ingat saya
                 </label>
-            </div>
+            </div> --}}
 
             <button 
                 type="submit"
