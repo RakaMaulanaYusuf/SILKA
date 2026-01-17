@@ -136,8 +136,6 @@ class BukuBesarController extends Controller
     public function getAccountBalance($company_id, $period_id, $account_id)
     {
         $account = KodeAkun::where('company_id', $company_id)
-            // PERBAIKAN: Mengganti company_period_id dan account_id
-            // KE: period_id dan kode_akun
             ->where('period_id', $period_id)
             ->where('kode_akun', $account_id)
             ->first();
@@ -145,8 +143,6 @@ class BukuBesarController extends Controller
         if (!$account) {
             return 0;
         }
-        
-        // PERBAIKAN: Mengganti balance_type ke pos_saldo
         $pos_saldo = $account->pos_saldo;
         
         if ($pos_saldo === 'DEBIT') {
@@ -156,11 +152,8 @@ class BukuBesarController extends Controller
         }
     
         $transactions = JurnalUmum::where('company_id', $company_id)
-            // PERBAIKAN: Mengganti company_period_id dan account_id
-            // KE: period_id dan kode_akun
             ->where('period_id', $period_id)
             ->where('kode_akun', $account_id)
-            // PERBAIKAN: Mengganti date dan id
             ->orderBy('tanggal')
             ->orderBy('jurnalumum_id')
             ->get();

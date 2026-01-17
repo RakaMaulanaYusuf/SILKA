@@ -498,25 +498,17 @@ class LabaRugiController extends Controller
     public function refreshBalances()
     {
         try {
-            // PERBAIKAN: Mengganti active_company_id dan company_period_id
-            // KE: company_id dan period_id (nama kolom di migration users)
             $company_id = auth()->user()->company_id;
             $period_id = auth()->user()->period_id;
             
-            // Refresh all account balances
-            // PERBAIKAN: Mengganti company_period_id
             $accounts = KodeAkun::where('company_id', $company_id)
                 ->where('period_id', $period_id)
-                // PERBAIKAN: Mengganti report_type (tidak ada di migration, tapi diasumsikan pos_laporan)
                 ->where('pos_laporan', 'LABARUGI') 
                 ->get()
                 ->map(function($account) {
                     return [
-                        // PERBAIKAN: Mengganti account_id ke kode_akun
-                        // PERBAIKAN: Mengganti name ke nama_akun
                         'kode_akun' => $account->kode_akun,
                         'name' => $account->nama_akun,
-                        // PERBAIKAN: Mengganti account_id
                         'balance' => $this->getBukuBesarBalance($account->kode_akun)
                     ];
                 });
